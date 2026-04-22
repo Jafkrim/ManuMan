@@ -1,0 +1,360 @@
+{
+    "version": 1,
+    "name": "IAA_GameInput",
+    "maps": [
+        {
+            "name": "Player",
+            "id": "7e058f06-c822-4517-91b0-686ce14b16c3",
+            "actions": [
+                {
+                    "name": "Open_Menu",
+                    "type": "Button",
+                    "id": "5e047a3d-124d-41bd-a2d5-480d64632269",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Left_Hand",
+                    "type": "Button",
+                    "id": "2a793573-fe8c-43d0-a012-7140e618579f",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Left_Foot",
+                    "type": "Button",
+                    "id": "e0220c35-ab8c-4fcf-920f-b8c07287dd62",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Right_Foot",
+                    "type": "Button",
+                    "id": "30641f7f-903b-4916-ad71-838e113338fe",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Right_Hand",
+                    "type": "Button",
+                    "id": "c130fa08-464a-4845-8ba5-c0699b1ac48f",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Player_Interact",
+                    "type": "Button",
+                    "id": "767b45dd-6c7a-4034-9707-ef80d081f78d",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Move_Limb",
+                    "type": "Button",
+                    "id": "9b5b9c15-58f4-4a22-9701-141710373f37",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Mouse_Delta",
+                    "type": "Value",
+                    "id": "bc058606-908f-4a18-9897-b166147718bd",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "d95a26ce-1088-4add-ae66-5d737aba730a",
+                    "path": "<Keyboard>/a",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";ManuMan_PC",
+                    "action": "Left_Hand",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e09ed021-0c13-41eb-ac1f-1cb5ccfc24ec",
+                    "path": "<Keyboard>/s",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";ManuMan_PC",
+                    "action": "Left_Foot",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "5f2ee39b-2cf8-4ce8-8295-2797c77387a1",
+                    "path": "<Keyboard>/d",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";ManuMan_PC",
+                    "action": "Right_Foot",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7a64c564-532a-4aa5-8b86-2c7d2fb5a32b",
+                    "path": "<Keyboard>/f",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";ManuMan_PC",
+                    "action": "Right_Hand",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "58ccb312-afa6-4372-a3cc-b9c7aee69906",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";ManuMan_PC",
+                    "action": "Player_Interact",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4e7ce11b-3a6b-4ca1-9f2c-696a87890bbd",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";ManuMan_PC",
+                    "action": "Move_Limb",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "945ea415-63fe-42c9-8190-5a9bec95d021",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";ManuMan_PC",
+                    "action": "Open_Menu",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2f9a0ee7-2a11-4c6c-8059-7b0eb636c2ff",
+                    "path": "<Mouse>/delta",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";ManuMan_PC",
+                    "action": "Mouse_Delta",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "UI",
+            "id": "0db6d68a-8fe0-4c06-b616-76e84f939830",
+            "actions": [
+                {
+                    "name": "Close_Menu",
+                    "type": "Button",
+                    "id": "0b048aac-c712-4e16-8176-917ca193a766",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Navigate_Top",
+                    "type": "Button",
+                    "id": "6c919c13-da29-4b29-aaab-f2663d68f6b4",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Navigate_Bottom",
+                    "type": "Button",
+                    "id": "fed5d916-62da-435f-a878-aa0e2bc5dd79",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Navigate_Left",
+                    "type": "Button",
+                    "id": "5413b32c-d361-414f-b785-4c6db5cf4a73",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Navigate_Right",
+                    "type": "Button",
+                    "id": "61eeb46a-d864-430d-80f7-37ca20a4acc2",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Adjust_Left",
+                    "type": "Button",
+                    "id": "62fd8c9d-74fa-4410-a144-af35859c7fcf",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Adjust_Right",
+                    "type": "Button",
+                    "id": "2ff305dc-ef47-47b7-add0-caa6b8d49372",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Player_Confirm",
+                    "type": "Button",
+                    "id": "6b99499a-d224-4f91-a404-8621a1c1329f",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "3db8f180-facf-4818-9c84-4e40d4064453",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";ManuMan_PC",
+                    "action": "Close_Menu",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "225e713f-9a0c-4cec-be88-c8d6080f8ccf",
+                    "path": "<Keyboard>/w",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";ManuMan_PC",
+                    "action": "Navigate_Top",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "d6414b9c-9a87-4276-9912-67d3057c726e",
+                    "path": "<Keyboard>/s",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";ManuMan_PC",
+                    "action": "Navigate_Bottom",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c308df59-f1d4-41ed-bad0-b6d9a040bf9b",
+                    "path": "<Keyboard>/q",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";ManuMan_PC",
+                    "action": "Navigate_Left",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "81662de1-6453-4eab-b630-ed5e40802b6d",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";ManuMan_PC",
+                    "action": "Navigate_Right",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4afe5ee0-d64a-4cab-8ebb-f58ad9f7988c",
+                    "path": "<Keyboard>/a",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";ManuMan_PC",
+                    "action": "Adjust_Left",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "8fa18109-e6cb-497a-901e-334ec612d5bb",
+                    "path": "<Keyboard>/d",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";ManuMan_PC",
+                    "action": "Adjust_Right",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "017158b6-fc16-42aa-a6a6-3ddae03aad80",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";ManuMan_PC",
+                    "action": "Player_Confirm",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": [
+        {
+            "name": "ManuMan_PC",
+            "bindingGroup": "ManuMan_PC",
+            "devices": [
+                {
+                    "devicePath": "<Keyboard>",
+                    "isOptional": false,
+                    "isOR": false
+                },
+                {
+                    "devicePath": "<Mouse>",
+                    "isOptional": false,
+                    "isOR": false
+                }
+            ]
+        }
+    ]
+}
