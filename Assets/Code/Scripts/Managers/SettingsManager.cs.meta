@@ -3,7 +3,13 @@ guid: ce42615d655036042adac1eb4bae600b
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - gameMixer: {fileID: 24100000, guid: d33428da4cd35ea4ba9559be80b6b1ef, type: 2}
+  - urpaLowQuality: {fileID: 11400000, guid: 6ba64d1ff3b3ce941bf4adc43c51c37f, type: 2}
+  - urpaHighQuality: {fileID: 11400000, guid: 74b71d7630fce8d45b227076f10f05fc, type: 2}
+  - mainCamera: {instanceID: 0}
+  - gameInput: {fileID: -944628639613478452, guid: 791f724230c913241806def34d419306,
+      type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

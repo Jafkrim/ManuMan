@@ -239,7 +239,7 @@ GameObject:
   m_Component:
   - component: {fileID: 312607716}
   m_Layer: 0
-  m_Name: ~~~~~~~~~~CAMERAS~~~~~~~~~~
+  m_Name: ~~~~~~~~~~CAMERA~~~~~~~~~~
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -299,11 +299,11 @@ ReflectionProbe:
   m_FarClip: 1000
   m_ShadowDistance: 0
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.62352943, g: 0.62352943, b: 0.62352943, a: 0}
+  m_BackGroundColor: {r: 0.49803922, g: 0.49803922, b: 0.49803922, a: 0}
   m_CullingMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IntensityMultiplier: 0.875
+  m_IntensityMultiplier: 1
   m_BlendDistance: 1
   m_HDR: 1
   m_BoxProjection: 0
@@ -463,12 +463,12 @@ MonoBehaviour:
   rotation: 5
   windRotation: 10
   layers:
-  - offset: {x: -0.054272443, y: -0.44460753}
+  - offset: {x: -0.18683119, y: -0.4327946}
     scale: 0.1
     intensity: 0.6
     wind: {x: 6.458498, y: 23.114668}
     rotation: 0
-  - offset: {x: -0.60484457, y: -0.9848011}
+  - offset: {x: -0.8639081, y: -0.41776097}
     scale: 0.14
     intensity: 0.4
     wind: {x: 18.85098, y: 6.6813607}
@@ -517,7 +517,7 @@ GameObject:
   m_Component:
   - component: {fileID: 652188490}
   m_Layer: 0
-  m_Name: ~~~~~~~~~~MANAGERS~~~~~~~~~~
+  m_Name: ~~~~~~~~~~MANAGER~~~~~~~~~~
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -535,7 +535,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 2114237567}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &700327707
@@ -673,7 +674,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pauseInEditor: 0
-  height: 750
+  height: 500
   curvature: 0.045
   depth: 500
   orthographicFOV: 60
@@ -690,23 +691,23 @@ MonoBehaviour:
     shader: {fileID: 4800000, guid: def0f14b99e26e94aa3abb0fb712e885, type: 3}
   filter:
     noiseTexture: {fileID: 2800000, guid: 178e604d7367fa04cbe610d0b0dae4b5, type: 3}
-    density: 5
+    density: 6
     scale: 1
     timeScale: 1
     rotation: 0
     windRotation: 0
     layers:
-    - offset: {x: -0.79553515, y: -0.34119225}
+    - offset: {x: -0.34901607, y: -0.3808024}
       scale: 4
       intensity: 0.1
       wind: {x: 7.9642105, y: 13.877007}
       rotation: 0
-    - offset: {x: -0.994375, y: -0.14396074}
+    - offset: {x: -0.11640293, y: -0.90430045}
       scale: 8
       intensity: 0.075
       wind: {x: 9.628571, y: 7.16175}
       rotation: 0
-    colorAbsorption: 3
+    colorAbsorption: -0.5
     color: {r: 1, g: 1, b: 1, a: 1}
     sunsetColor: {r: 1, g: 0.3, b: 0, a: 1}
     moonColor: {r: 0.01176, g: 0.01668, b: 0.03, a: 1}
@@ -731,7 +732,7 @@ MonoBehaviour:
   ignoreCameraLayers:
     serializedVersion: 2
     m_Bits: 0
-  ignoreCameraTypes: 20
+  ignoreCameraTypes: 0
   order: 0
   blitShader: {fileID: 4800000, guid: c0ae63d42fe813145aefbfe501ae3baf, type: 3}
   renderAboveOpaques: 1
@@ -764,7 +765,7 @@ GameObject:
   m_Component:
   - component: {fileID: 972628303}
   m_Layer: 0
-  m_Name: ~~~~~~~~~~LIGHTS~~~~~~~~~~
+  m_Name: ~~~~~~~~~~LIGHT~~~~~~~~~~
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -883,7 +884,7 @@ Light:
   m_LightShadowCasterMode: 0
   m_AreaSize: {x: 1, y: 1}
   m_BounceIntensity: 1
-  m_ColorTemperature: 6000
+  m_ColorTemperature: 6500
   m_UseColorTemperature: 1
   m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
@@ -898,13 +899,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1299957538}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.1913417, y: -0.1913417, z: 0.038060226, w: 0.9619398}
+  m_LocalRotation: {x: 0.37533024, y: -0.18023993, z: 0.07465782, w: 0.90612745}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 972628303}
-  m_LocalEulerAnglesHint: {x: 22.5, y: -22.5, z: 0}
+  m_LocalEulerAnglesHint: {x: 45, y: -22.5, z: 0}
 --- !u!1 &1424200126
 GameObject:
   m_ObjectHideFlags: 0
@@ -1057,7 +1058,7 @@ GameObject:
   - component: {fileID: 1655200068}
   - component: {fileID: 1655200067}
   m_Layer: 0
-  m_Name: Camera
+  m_Name: Main Camera
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1393,6 +1394,75 @@ Transform:
   m_Children: []
   m_Father: {fileID: 469086468}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2114237566
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2114237567}
+  - component: {fileID: 2114237568}
+  m_Layer: 0
+  m_Name: Settings Manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2114237567
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2114237566}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 652188490}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2114237568
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2114237566}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce42615d655036042adac1eb4bae600b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentSettings:
+    masterVolume: 100
+    musicVolume: 100
+    environmentVolume: 100
+    dialogueVolume: 100
+    uiVolume: 100
+    mechanismVolume: 100
+    qualityPresetIndex: 2
+    isFullScreen: 1
+    resolutionIndex: 0
+    vSyncIndex: 1
+    textureMipmapIndex: 0
+    antiAliasingIndex: 2
+    renderScaleIndex: 4
+    upscalingFilterIndex: 1
+    shadowQualityIndex: 3
+    useSoftShadows: 1
+    screenSpaceEffectIndex: 4
+    inputBindingOverridesJson: 
+  gameMixer: {fileID: 24100000, guid: d33428da4cd35ea4ba9559be80b6b1ef, type: 2}
+  urpaLowQuality: {fileID: 11400000, guid: 6ba64d1ff3b3ce941bf4adc43c51c37f, type: 2}
+  urpaHighQuality: {fileID: 11400000, guid: 74b71d7630fce8d45b227076f10f05fc, type: 2}
+  mainCamera: {fileID: 1655200069}
+  gameInput: {fileID: -944628639613478452, guid: 791f724230c913241806def34d419306,
+    type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
