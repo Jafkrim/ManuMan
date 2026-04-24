@@ -184,7 +184,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: b3ba617e64e0739468f43245f4ebb913, type: 2}
+  - {fileID: 2100000, guid: 03e66572148aa914c8f53169e76b31fc, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -456,19 +456,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   noiseTexture: {fileID: 2800000, guid: 178e604d7367fa04cbe610d0b0dae4b5, type: 3}
-  density: 3
-  cloudiness: 0.45
-  scale: 1
+  density: 2.5
+  cloudiness: 0.44444445
+  scale: 0.75
   timeScale: 1
-  rotation: 5
-  windRotation: 10
+  rotation: 30
+  windRotation: 45
   layers:
-  - offset: {x: -0.18683119, y: -0.4327946}
+  - offset: {x: -0.93387634, y: -0.8589127}
     scale: 0.1
     intensity: 0.6
     wind: {x: 6.458498, y: 23.114668}
     rotation: 0
-  - offset: {x: -0.8639081, y: -0.41776097}
+  - offset: {x: -0.34152928, y: -0.31926045}
     scale: 0.14
     intensity: 0.4
     wind: {x: 18.85098, y: 6.6813607}
@@ -599,7 +599,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: b3ba617e64e0739468f43245f4ebb913, type: 2}
+  - {fileID: 2100000, guid: 03e66572148aa914c8f53169e76b31fc, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -674,7 +674,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pauseInEditor: 0
-  height: 500
+  height: 375
   curvature: 0.045
   depth: 500
   orthographicFOV: 60
@@ -697,17 +697,17 @@ MonoBehaviour:
     rotation: 0
     windRotation: 0
     layers:
-    - offset: {x: -0.34901607, y: -0.3808024}
+    - offset: {x: -0.46966404, y: -0.4833405}
       scale: 4
       intensity: 0.1
       wind: {x: 7.9642105, y: 13.877007}
       rotation: 0
-    - offset: {x: -0.11640293, y: -0.90430045}
+    - offset: {x: -0.3122311, y: -0.6673689}
       scale: 8
       intensity: 0.075
       wind: {x: 9.628571, y: 7.16175}
       rotation: 0
-    colorAbsorption: -0.5
+    colorAbsorption: -3
     color: {r: 1, g: 1, b: 1, a: 1}
     sunsetColor: {r: 1, g: 0.3, b: 0, a: 1}
     moonColor: {r: 0.01176, g: 0.01668, b: 0.03, a: 1}
@@ -720,9 +720,9 @@ MonoBehaviour:
     sun: {fileID: 1299957540}
     useCustomMoonLight: 0
     moon: {fileID: 0}
-    fadeDistance: 0.15
+    fadeDistance: 0
     fadeLength: 0.25
-    detailLevel: 0.6666667
+    detailLevel: 0.875
   finalResolution: 3
   baseResolution: 4
   filterMode: 1
@@ -732,7 +732,7 @@ MonoBehaviour:
   ignoreCameraLayers:
     serializedVersion: 2
     m_Bits: 0
-  ignoreCameraTypes: 0
+  ignoreCameraTypes: 20
   order: 0
   blitShader: {fileID: 4800000, guid: c0ae63d42fe813145aefbfe501ae3baf, type: 3}
   renderAboveOpaques: 1
@@ -1000,7 +1000,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: b3ba617e64e0739468f43245f4ebb913, type: 2}
+  - {fileID: 2100000, guid: 03e66572148aa914c8f53169e76b31fc, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1349,7 +1349,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: b3ba617e64e0739468f43245f4ebb913, type: 2}
+  - {fileID: 2100000, guid: 03e66572148aa914c8f53169e76b31fc, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1445,22 +1445,20 @@ MonoBehaviour:
     dialogueVolume: 100
     uiVolume: 100
     mechanismVolume: 100
-    qualityPresetIndex: 2
+    qualityPreset: 1
     isFullScreen: 1
-    resolutionIndex: 0
-    vSyncIndex: 1
-    textureMipmapIndex: 0
-    antiAliasingIndex: 2
-    renderScaleIndex: 4
-    upscalingFilterIndex: 1
-    shadowQualityIndex: 3
-    useSoftShadows: 1
-    screenSpaceEffectIndex: 4
+    resolution: 0
+    vSync: 1
+    textureMipmap: 0
+    antiAliasing: 2
+    renderScale: 4
+    upscalingFilter: 0
+    shadowQuality: 3
+    screenSpaceEffect: 4
     inputBindingOverridesJson: 
   gameMixer: {fileID: 24100000, guid: d33428da4cd35ea4ba9559be80b6b1ef, type: 2}
   urpaLowQuality: {fileID: 11400000, guid: 6ba64d1ff3b3ce941bf4adc43c51c37f, type: 2}
   urpaHighQuality: {fileID: 11400000, guid: 74b71d7630fce8d45b227076f10f05fc, type: 2}
-  mainCamera: {fileID: 1655200069}
   gameInput: {fileID: -944628639613478452, guid: 791f724230c913241806def34d419306,
     type: 3}
 --- !u!1660057539 &9223372036854775807
