@@ -458,17 +458,17 @@ MonoBehaviour:
   noiseTexture: {fileID: 2800000, guid: 178e604d7367fa04cbe610d0b0dae4b5, type: 3}
   density: 2.5
   cloudiness: 0.44444445
-  scale: 0.75
+  scale: 0.6666667
   timeScale: 1
-  rotation: 30
-  windRotation: 45
+  rotation: 0
+  windRotation: 0
   layers:
-  - offset: {x: -0.93387634, y: -0.8589127}
+  - offset: {x: -0.23981154, y: -0.7384769}
     scale: 0.1
     intensity: 0.6
     wind: {x: 6.458498, y: 23.114668}
     rotation: 0
-  - offset: {x: -0.34152928, y: -0.31926045}
+  - offset: {x: -0.38617116, y: -0.6177784}
     scale: 0.14
     intensity: 0.4
     wind: {x: 18.85098, y: 6.6813607}
@@ -674,7 +674,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pauseInEditor: 0
-  height: 375
+  height: 333.3333
   curvature: 0.045
   depth: 500
   orthographicFOV: 60
@@ -697,12 +697,12 @@ MonoBehaviour:
     rotation: 0
     windRotation: 0
     layers:
-    - offset: {x: -0.46966404, y: -0.4833405}
+    - offset: {x: -0.6083421, y: -0.088551655}
       scale: 4
       intensity: 0.1
       wind: {x: 7.9642105, y: 13.877007}
       rotation: 0
-    - offset: {x: -0.3122311, y: -0.6673689}
+    - offset: {x: -0.17082345, y: -0.28947517}
       scale: 8
       intensity: 0.075
       wind: {x: 9.628571, y: 7.16175}
@@ -732,7 +732,7 @@ MonoBehaviour:
   ignoreCameraLayers:
     serializedVersion: 2
     m_Bits: 0
-  ignoreCameraTypes: 20
+  ignoreCameraTypes: 0
   order: 0
   blitShader: {fileID: 4800000, guid: c0ae63d42fe813145aefbfe501ae3baf, type: 3}
   renderAboveOpaques: 1
