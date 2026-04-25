@@ -176,13 +176,15 @@ public class SettingsManager : MonoBehaviour
     }
 
     public void LoadSettings() {
-        if (File.Exists(savePath)) {
-            currentSettings = JsonUtility.FromJson<SettingData>(File.ReadAllText(savePath));
-            if (!string.IsNullOrEmpty(currentSettings.inputBindingOverridesJson))
-                gameInput.LoadBindingOverridesFromJson(currentSettings.inputBindingOverridesJson);
-        }
-        ApplySettings(currentSettings);
+    if (File.Exists(savePath)) {
+        currentSettings = JsonUtility.FromJson<SettingData>(File.ReadAllText(savePath));
+        if (!string.IsNullOrEmpty(currentSettings.inputBindingOverridesJson))
+            gameInput.LoadBindingOverridesFromJson(currentSettings.inputBindingOverridesJson);
+    } else {
+        SaveSettings(); // Create a JSON file with default settings
     }
+    ApplySettings(currentSettings);
+}
 
     private void RevertInput() {
         gameInput.RemoveAllBindingOverrides();
