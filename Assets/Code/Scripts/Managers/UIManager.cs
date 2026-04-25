@@ -10,9 +10,10 @@ using System.Diagnostics;
 
 public class UIManager : MonoBehaviour
 {
-    public GameObject Game;
-    public GameObject PauseMenu;
-    public GameObject OptionMenu;
+    public GameObject uiGame;
+    public Image uiGameBlur;
+    public GameObject uiPause;
+    public GameObject uiOption;
 
     public GameObject ResumeButton;
     public GameObject OptionButton;
@@ -28,6 +29,7 @@ public class UIManager : MonoBehaviour
     public GameObject KeybindsPanel;
     public GameObject CreditsPanel;
 
+    // Later delete
     public TextMeshProUGUI text;
 
     public PlayerInput playerInput;
@@ -38,6 +40,9 @@ public class UIManager : MonoBehaviour
     private int lastMenuToggleFrame = -1;
     private int lastEscapeHandledFrame = -1;
     private int lastTabSwitchFrame = -1;
+    private Coroutine blurRoutine;
+    private Color blurColor;
+
 
     private void Awake()
     {
@@ -57,9 +62,9 @@ public class UIManager : MonoBehaviour
 
     void Start()
     {
-        PauseMenu.SetActive(false);
-        Game.SetActive(true);
-        OptionMenu.SetActive(false);
+        uiPause.SetActive(false);
+        uiGame.SetActive(true);
+        uiOption.SetActive(false);
 
         ResolveOptionMenuReferences();
         ApplyCurrentTabState();
@@ -72,6 +77,35 @@ public class UIManager : MonoBehaviour
         {
             UnityEngine.Debug.LogWarning("UIManager: PlayerInput reference is missing. Assign it in the inspector or keep one active PlayerInput in scene.");
         }
+        blurColor = uiGameBlur.color;
+        blurColor.a = 0f;
+        uiGameBlur.color = blurColor;
+        uiGameBlur.gameObject.SetActive(false);
+    }
+
+    private IEnumerator FadeBlur(float targetAlpha, float duration)
+    {
+        uiGameBlur.gameObject.SetActive(true);
+
+        float startAlpha = uiGameBlur.color.a;
+        float t = 0f;
+
+        while (t < duration)
+        {
+            t += Time.unscaledDeltaTime;
+            float normalized = t / duration;
+
+            blurColor.a = Mathf.Lerp(startAlpha, targetAlpha, normalized);
+            uiGameBlur.color = blurColor;
+
+            yield return null;
+        }
+
+        blurColor.a = targetAlpha;
+        uiGameBlur.color = blurColor;
+
+        if (targetAlpha == 0f)
+            uiGameBlur.gameObject.SetActive(false);
     }
 
     private void ResolvePlayerInput()
@@ -100,39 +134,39 @@ public class UIManager : MonoBehaviour
 
     private void ResolveOptionMenuReferences()
     {
-        if (OptionMenu == null) return;
+        if (uiOption == null) return;
 
         if (AudioPanel == null)
-            AudioPanel = FindChildByName(OptionMenu, "AudioPanel");
+            AudioPanel = FindChildByName(uiOption, "AudioPanel");
 
         if (GraphicsPanel == null)
-            GraphicsPanel = FindChildByName(OptionMenu, "GraphicsPanel");
+            GraphicsPanel = FindChildByName(uiOption, "GraphicsPanel");
 
         if (KeybindsPanel == null)
         {
-            KeybindsPanel = FindChildByName(OptionMenu, "KeybindsPanel");
+            KeybindsPanel = FindChildByName(uiOption, "KeybindsPanel");
             if (KeybindsPanel == null)
-                KeybindsPanel = FindChildByName(OptionMenu, "KeybindPanel");
+                KeybindsPanel = FindChildByName(uiOption, "KeybindPanel");
         }
 
         if (CreditsPanel == null)
-            CreditsPanel = FindChildByName(OptionMenu, "CreditsPanel");
+            CreditsPanel = FindChildByName(uiOption, "CreditsPanel");
 
         if (AudioButton == null)
-            AudioButton = FindChildByName(OptionMenu, "AudioButton");
+            AudioButton = FindChildByName(uiOption, "AudioButton");
 
         if (GraphicsButton == null)
-            GraphicsButton = FindChildByName(OptionMenu, "GraphicsButton");
+            GraphicsButton = FindChildByName(uiOption, "GraphicsButton");
 
         if (KeybindsButton == null)
         {
-            KeybindsButton = FindChildByName(OptionMenu, "KeybindsButton");
+            KeybindsButton = FindChildByName(uiOption, "KeybindsButton");
             if (KeybindsButton == null)
-                KeybindsButton = FindChildByName(OptionMenu, "KeybindButton");
+                KeybindsButton = FindChildByName(uiOption, "KeybindButton");
         }
 
         if (CreditsButton == null)
-            CreditsButton = FindChildByName(OptionMenu, "CreditsButton");
+            CreditsButton = FindChildByName(uiOption, "CreditsButton");
     }
 
     private GameObject GetTabButton(int tabIndex)
@@ -186,8 +220,8 @@ public class UIManager : MonoBehaviour
 
     private void HandleTabSwitchInput(int direction)
     {
-        if (OptionMenu == null) return;
-        if (!OptionMenu.activeSelf) return;
+        if (uiOption == null) return;
+        if (!uiOption.activeSelf) return;
         if (lastTabSwitchFrame == Time.frameCount) return;
         lastTabSwitchFrame = Time.frameCount;
 
@@ -348,8 +382,8 @@ public class UIManager : MonoBehaviour
 
     private void HandleOptionMenuKeyboard()
     {
-        if (OptionMenu == null) return;
-        if (!OptionMenu.activeSelf || Keyboard.current == null) return;
+        if (uiOption == null) return;
+        if (!uiOption.activeSelf || Keyboard.current == null) return;
 
         if (Keyboard.current.qKey.wasPressedThisFrame)
             HandleTabSwitchInput(-1);
@@ -406,24 +440,34 @@ public class UIManager : MonoBehaviour
         if (lastMenuToggleFrame == Time.frameCount) return;
         lastMenuToggleFrame = Time.frameCount;
 
-        if (Game.activeSelf)
+        if (uiGame.activeSelf)
         {
-            Game.SetActive(false);
-            PauseMenu.SetActive(true);
+            uiGame.SetActive(false);
+            uiPause.SetActive(true);
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
             if (playerInput != null)
                 playerInput.SwitchCurrentActionMap("UI");
+            
+            if (blurRoutine != null)
+                StopCoroutine(blurRoutine);
+
+            blurRoutine = StartCoroutine(FadeBlur(1f, 0.2f));
         }
         else
         {
-            Game.SetActive(true);
-            PauseMenu.SetActive(false);
-            OptionMenu.SetActive(false);
+            uiGame.SetActive(true);
+            uiPause.SetActive(false);
+            uiOption.SetActive(false);
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
             if (playerInput != null)
                 playerInput.SwitchCurrentActionMap("Player");
+            
+            if (blurRoutine != null)
+                StopCoroutine(blurRoutine);
+
+            blurRoutine = StartCoroutine(FadeBlur(0f, 0.2f));
         }
     }
 
@@ -432,11 +476,11 @@ public class UIManager : MonoBehaviour
         if (lastEscapeHandledFrame == Time.frameCount) return;
         lastEscapeHandledFrame = Time.frameCount;
 
-        if (OptionMenu.activeSelf)
+        if (uiOption.activeSelf)
         {
-            OptionMenu.SetActive(false);
-            PauseMenu.SetActive(true);
-            Game.SetActive(false);
+            uiOption.SetActive(false);
+            uiPause.SetActive(true);
+            uiGame.SetActive(false);
             EventSystem.current?.SetSelectedGameObject(OptionButton);
             return;
         }
@@ -469,12 +513,12 @@ public class UIManager : MonoBehaviour
 
         HandleOptionMenuKeyboard();
 
-        // if (Input.GetKeyDown(KeyCode.Escape) && !OptionMenu.activeSelf)
+        // if (Input.GetKeyDown(KeyCode.Escape) && !uiOption.activeSelf)
         // {
-        //     if (Game.activeSelf)
+        //     if (uiGame.activeSelf)
         //     {
-        //         Game.SetActive(false);
-        //         PauseMenu.SetActive(true);
+        //         uiGame.SetActive(false);
+        //         uiPause.SetActive(true);
         //         Cursor.lockState = CursorLockMode.None;
         //         Cursor.visible = true;
         //         playerInput.SwitchCurrentActionMap("UI");
@@ -482,23 +526,23 @@ public class UIManager : MonoBehaviour
         //     }
         //     else
         //     {
-        //         Game.SetActive(true);
-        //         PauseMenu.SetActive(false);
+        //         uiGame.SetActive(true);
+        //         uiPause.SetActive(false);
         //         Cursor.lockState = CursorLockMode.Locked;
         //         Cursor.visible = false;
         //         playerInput.SwitchCurrentActionMap("Player");
         //     }
         // }
 
-        // if (Input.GetKeyDown(KeyCode.Escape) && OptionMenu.activeSelf)
+        // if (Input.GetKeyDown(KeyCode.Escape) && uiOption.activeSelf)
         // {
-        //     OptionMenu.SetActive(false);
-        //     PauseMenu.SetActive(true);
-        //     Game.SetActive(false);
+        //     uiOption.SetActive(false);
+        //     uiPause.SetActive(true);
+        //     uiGame.SetActive(false);
         // }
 
 
-
+        // Later delete
         if (Keyboard.current.anyKey.wasPressedThisFrame)
         {
             foreach (var key in Keyboard.current.allKeys)
@@ -515,8 +559,8 @@ public class UIManager : MonoBehaviour
 
     public void ResumeGame()
     {
-        Game.SetActive(true);
-        PauseMenu.SetActive(false);
+        uiGame.SetActive(true);
+        uiPause.SetActive(false);
         Cursor.visible = false;
 
         EventSystem.current.SetSelectedGameObject(ResumeButton);
@@ -529,9 +573,9 @@ public class UIManager : MonoBehaviour
         currentTab = 0;
         ApplyCurrentTabState();
 
-        OptionMenu.SetActive(true);
-        PauseMenu.SetActive(false);
-        Game.SetActive(false);
+        uiOption.SetActive(true);
+        uiPause.SetActive(false);
+        uiGame.SetActive(false);
 
         GameObject defaultTabButton = GetTabButton(currentTab);
         if (defaultTabButton != null)
@@ -562,7 +606,7 @@ public class UIManager : MonoBehaviour
     public void OnTabSwitch(InputAction.CallbackContext ctx)
     {
         if (!ctx.performed) return;
-        if (!OptionMenu.activeSelf) return;
+        if (!uiOption.activeSelf) return;
 
         string key = ctx.control.path;
 

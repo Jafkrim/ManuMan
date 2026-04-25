@@ -11,8 +11,14 @@ public class SettingsManager : MonoBehaviour
     public static SettingsManager Instance;
 
     [Header("Settings Data")]
-    public SettingData currentSettings = new SettingData();
+    private SettingData currentSettings = new SettingData();
     private SettingData tempSettings;
+
+    // Final settings. Applied to the game
+    public SettingData CurrentSettings => currentSettings;
+
+    // Temporary settings. Used in menu, not yet saved
+    public SettingData TempSettings => tempSettings;
 
     [Header("References")]
     public AudioMixer gameMixer;
@@ -24,57 +30,39 @@ public class SettingsManager : MonoBehaviour
 
     void Awake()
     {
-        if (Instance == null) { Instance = this; DontDestroyOnLoad(gameObject); SceneManager.sceneLoaded += OnSceneLoaded; }
-        else { Destroy(gameObject); return; }
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+            SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
 
         savePath = Path.Combine(Application.persistentDataPath, "gamesettings.json");
         LoadSettings();
         tempSettings = CloneSettings(currentSettings);
     }
 
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode) { mainCamera = null; ApplySettings(currentSettings); }
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        mainCamera = Camera.main;
+        ApplySettings(currentSettings);
+    }
+    
     private void OnDestroy() => SceneManager.sceneLoaded -= OnSceneLoaded;
-
-    public void ChangeIntSetting(ref int settingField, int direction, int maxIndex, bool isQualityPreset = false)
-    {
-        int nextValue = Mathf.Clamp(settingField + direction, 0, maxIndex);
-        if (nextValue == settingField) return;
-
-        settingField = nextValue;
-        if (isQualityPreset) ApplyPresetToTemp(nextValue);
-        else tempSettings.qualityPreset = 2; // Switch to Custom
-
-        ApplySettings(tempSettings);
-    }
-
-    private void ApplyPresetToTemp(int presetIndex)
-    {
-        if (presetIndex == 0) // Low
-        {
-            tempSettings.textureMipmap = 2;
-            tempSettings.antiAliasing = 0;
-            tempSettings.renderScale = 0;
-            tempSettings.upscalingFilter = 2;
-            tempSettings.shadowQuality = 1;
-            tempSettings.screenSpaceEffect = 0;
-        }
-        else if (presetIndex == 1) // High
-        {
-            tempSettings.textureMipmap = 0;
-            tempSettings.antiAliasing = 2;
-            tempSettings.renderScale = 4;
-            tempSettings.upscalingFilter = 0;
-            tempSettings.shadowQuality = 3;
-            tempSettings.screenSpaceEffect = 4;
-        }
-    }
 
     public void ApplySettings(SettingData data)
     {
         // Audio
         string[] p = { "masterVolume", "musicVolume", "environmentVolume", "dialogueVolume", "uiVolume", "mechanismVolume" };
-        int[] v = { data.masterVolume, data.musicVolume, data.environmentVolume, data.dialogueVolume, data.uiVolume, data.mechanismVolume };
-        for (int i = 0; i < p.Length; i++) SetVolume(p[i], v[i]);
+        int[] q = { data.masterVolume, data.musicVolume, data.environmentVolume, data.dialogueVolume, data.uiVolume, data.mechanismVolume };
+        
+        for (int i = 0; i < p.Length; i++)
+            ApplyVolume(p[i], q[i]);
 
         // Fullscreen and Resolution
         if (data.isFullScreen)
@@ -93,25 +81,31 @@ public class SettingsManager : MonoBehaviour
 
             int idx = Mathf.Clamp(data.resolution, 0, resSteps.Length - 1);
             Vector2Int target = resSteps[idx];
-
             Screen.SetResolution(target.x, target.y, FullScreenMode.Windowed);
         }
 
         // URP Type and Texture Mipmap
-        GraphicsSettings.renderPipelineAsset = (data.qualityPreset == 0) ? urpaLowQuality : urpaHighQuality;
-        QualitySettings.SetQualityLevel(data.qualityPreset, true);
+        int basePreset = (data.qualityPreset == 2) ? data.baseQualityPreset : data.qualityPreset;
+        GraphicsSettings.renderPipelineAsset = (basePreset == 0) ? urpaLowQuality : urpaHighQuality;
+
+        // Only change Unity QualityLevel when NOT custom
+        if (data.qualityPreset <= 1)
+            QualitySettings.SetQualityLevel(data.qualityPreset, true);
+
         QualitySettings.globalTextureMipmapLimit = data.textureMipmap;
 
         // Camera Anti-Aliasing
-        if (mainCamera == null) mainCamera = Camera.main;
-        if (mainCamera != null) {
+        if (mainCamera != null)
+        {
             var camData = mainCamera.GetUniversalAdditionalCameraData();
             camData.antialiasing = data.antiAliasing == 2 ? AntialiasingMode.TemporalAntiAliasing : (AntialiasingMode)data.antiAliasing;
         }
 
         // Render Scale and Upscaling Filter
         var activeAsset = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
-        if (activeAsset != null) {
+
+        if (activeAsset != null)
+        {
             float[] scales = { 0.75f, 0.875f, 1.0f, 1.125f, 1.25f };
             activeAsset.renderScale = scales[Mathf.Clamp(data.renderScale, 0, 4)];
             activeAsset.upscalingFilter = (UpscalingFilterSelection)data.upscalingFilter;
@@ -120,39 +114,135 @@ public class SettingsManager : MonoBehaviour
         // Shadows and V-Sync
         ApplyShadowDetails(data.shadowQuality);
         QualitySettings.vSyncCount = data.vSync;
-        Screen.fullScreen = data.isFullScreen;
 
         // Screen Space Effects
         ApplyRendererFeatures(data.screenSpaceEffect);
     }
 
+    public void ApplyChanges()
+    {
+        currentSettings = CloneSettings(tempSettings);
+        SaveSettings();
+        ApplySettings(currentSettings);
+    }
+
+    public void DiscardChanges()
+    {
+        tempSettings = CloneSettings(currentSettings);
+        RevertInput();
+        ApplySettings(currentSettings);
+    }
+    
+    public void SaveSettings() {
+        if (gameInput != null)
+            currentSettings.inputBindingOverridesJson = gameInput.SaveBindingOverridesAsJson();
+
+        File.WriteAllText(savePath, JsonUtility.ToJson(currentSettings, true));
+    }
+
+    public void LoadSettings() {
+        if (File.Exists(savePath)) {
+            currentSettings = JsonUtility.FromJson<SettingData>(File.ReadAllText(savePath));
+
+            if (gameInput != null && !string.IsNullOrEmpty(currentSettings.inputBindingOverridesJson))
+                gameInput.LoadBindingOverridesFromJson(currentSettings.inputBindingOverridesJson);
+        }
+        else
+        {
+            SaveSettings(); // Create a JSON file with default settings
+        }
+
+        ApplySettings(currentSettings);
+    }
+
+    public bool HasPendingChanges() => !tempSettings.IsEqual(currentSettings);
+
+    public void UpdateTempKeybinds() => tempSettings.inputBindingOverridesJson = gameInput.SaveBindingOverridesAsJson();
+
+    public void ChangeIntSetting(ref int settingField, int direction, int maxIndex, bool isQualityPreset = false)
+    {
+        int nextValue = Mathf.Clamp(settingField + direction, 0, maxIndex);
+        
+        if (nextValue == settingField)
+            return;
+
+        settingField = nextValue;
+        
+        if (isQualityPreset)
+            ApplyPresetToTemp(nextValue);
+        else
+            tempSettings.qualityPreset = 2; // Switch to Custom
+    }
+
+    private void ApplyPresetToTemp(int presetIndex)
+    {
+        if (presetIndex == 0) // Low
+        {
+            tempSettings.baseQualityPreset = 0;
+            tempSettings.textureMipmap = 2;
+            tempSettings.antiAliasing = 0;
+            tempSettings.renderScale = 0;
+            tempSettings.upscalingFilter = 2;
+            tempSettings.shadowQuality = 1;
+            tempSettings.screenSpaceEffect = 0;
+        }
+        else if (presetIndex == 1) // High
+        {
+            tempSettings.baseQualityPreset = 1;
+            tempSettings.textureMipmap = 0;
+            tempSettings.antiAliasing = 2;
+            tempSettings.renderScale = 4;
+            tempSettings.upscalingFilter = 0;
+            tempSettings.shadowQuality = 3;
+            tempSettings.screenSpaceEffect = 4;
+        }
+    }
+
+    private void ApplyVolume(string param, int val) {
+        if (gameMixer == null)
+            return;
+
+        float dB = val <= 0 ? -80f : Mathf.Log10(val / 100f) * 20f;
+        gameMixer.SetFloat(param, dB);
+    }
+
     private void ApplyShadowDetails(int index)
     {
         QualitySettings.shadows = (index == 0) ? UnityEngine.ShadowQuality.Disable : UnityEngine.ShadowQuality.All;
-        if (index == 0) return;
+
+        if (index == 0)
+            return;
 
         float[] shadowDistances = { 0f, 30f, 45f, 60f };
         QualitySettings.shadowDistance = shadowDistances[Mathf.Clamp(index, 0, 3)];
-
         var pipeline = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
+        
         if (pipeline != null) {
             int[] mainRes = { 0, 512, 1024, 2048 };
             int[] atlasRes = { 0, 256, 512, 1024 };
             var type = typeof(UniversalRenderPipelineAsset);
             var mainF = type.GetField("m_MainLightShadowmapResolution", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
             var atlasF = type.GetField("m_AdditionalLightsShadowmapResolution", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-            if (mainF != null) mainF.SetValue(pipeline, mainRes[Mathf.Clamp(index, 0, 3)]);
-            if (atlasF != null) atlasF.SetValue(pipeline, atlasRes[Mathf.Clamp(index, 0, 3)]);
+            
+            if (mainF != null)
+                mainF.SetValue(pipeline, mainRes[Mathf.Clamp(index, 0, 3)]);
+            if (atlasF != null)
+                atlasF.SetValue(pipeline, atlasRes[Mathf.Clamp(index, 0, 3)]);
         }
     }
 
     private void ApplyRendererFeatures(int index)
     {
         var pipeline = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
-        if (pipeline == null) return;
+
+        if (pipeline == null)
+            return;
+
         var property = typeof(UniversalRenderPipelineAsset).GetProperty("scriptableRendererData", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var rendererData = property?.GetValue(pipeline) as ScriptableRendererData;
-        if (rendererData == null) return;
+
+        if (rendererData == null)
+            return;
 
         foreach (var feature in rendererData.rendererFeatures) {
             if (feature.name.Contains("Screen Space Ambient Occlusion")) feature.SetActive(index == 1 || index == 2 || index == 4);
@@ -161,39 +251,14 @@ public class SettingsManager : MonoBehaviour
         }
     }
 
-    private void SetVolume(string param, int val) {
-        if (gameMixer == null) return;
-        float dB = val <= 0 ? -80f : Mathf.Log10(val / 100f) * 20f;
-        gameMixer.SetFloat(param, dB);
-    }
-
-    public void ConfirmAndSave() { currentSettings = CloneSettings(tempSettings); SaveSettings(); ApplySettings(currentSettings); }
-    public void CloseWithoutSaving() { tempSettings = CloneSettings(currentSettings); RevertInput(); ApplySettings(currentSettings); }
-    
-    public void SaveSettings() {
-        currentSettings.inputBindingOverridesJson = gameInput.SaveBindingOverridesAsJson();
-        File.WriteAllText(savePath, JsonUtility.ToJson(currentSettings, true));
-    }
-
-    public void LoadSettings() {
-    if (File.Exists(savePath)) {
-        currentSettings = JsonUtility.FromJson<SettingData>(File.ReadAllText(savePath));
-        if (!string.IsNullOrEmpty(currentSettings.inputBindingOverridesJson))
-            gameInput.LoadBindingOverridesFromJson(currentSettings.inputBindingOverridesJson);
-    } else {
-        SaveSettings(); // Create a JSON file with default settings
-    }
-    ApplySettings(currentSettings);
-}
-
     private void RevertInput() {
         gameInput.RemoveAllBindingOverrides();
+        
         if (!string.IsNullOrEmpty(currentSettings.inputBindingOverridesJson))
             gameInput.LoadBindingOverridesFromJson(currentSettings.inputBindingOverridesJson);
     }
 
     private SettingData CloneSettings(SettingData source) => JsonUtility.FromJson<SettingData>(JsonUtility.ToJson(source));
-    public void UpdateTempKeybinds() => tempSettings.inputBindingOverridesJson = gameInput.SaveBindingOverridesAsJson();
 
     // UI Wrappers
     public void UI_Preset(int dir) => ChangeIntSetting(ref tempSettings.qualityPreset, dir, 1, true);
@@ -218,6 +283,7 @@ public class SettingsManager : MonoBehaviour
 
         [Header("Graphics")]
         [Range(0, 2), Tooltip("0:Low\n1:High\n2:Custom")] public int qualityPreset = 1;
+        [HideInInspector] public int baseQualityPreset = 1;
         public bool isFullScreen = true;
         [Range(0, 3), Tooltip("0:1080p\n1:900p\n2:720p\n3:480p")] public int resolution = 0;
         [Range(0, 2), Tooltip("0:Off\n1:Full rate\n2:Half rate")] public int vSync = 1;
@@ -230,5 +296,33 @@ public class SettingsManager : MonoBehaviour
 
         [Header("Keybinds")]
         public string inputBindingOverridesJson;
+
+        public bool IsEqual(SettingData compared)
+        {
+            if (compared == null)
+                return false;
+
+            return
+                masterVolume == compared.masterVolume &&
+                musicVolume == compared.musicVolume &&
+                environmentVolume == compared.environmentVolume &&
+                dialogueVolume == compared.dialogueVolume &&
+                uiVolume == compared.uiVolume &&
+                mechanismVolume == compared.mechanismVolume &&
+
+                qualityPreset == compared.qualityPreset &&
+                baseQualityPreset == compared.baseQualityPreset &&
+                isFullScreen == compared.isFullScreen &&
+                resolution == compared.resolution &&
+                vSync == compared.vSync &&
+                textureMipmap == compared.textureMipmap &&
+                antiAliasing == compared.antiAliasing &&
+                renderScale == compared.renderScale &&
+                upscalingFilter == compared.upscalingFilter &&
+                shadowQuality == compared.shadowQuality &&
+                screenSpaceEffect == compared.screenSpaceEffect &&
+
+                inputBindingOverridesJson == compared.inputBindingOverridesJson;
+        }
     }
 }

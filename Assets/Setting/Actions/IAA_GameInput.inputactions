@@ -7,7 +7,7 @@
             "id": "7e058f06-c822-4517-91b0-686ce14b16c3",
             "actions": [
                 {
-                    "name": "OpenMenu",
+                    "name": "Open_Menu",
                     "type": "Button",
                     "id": "5e047a3d-124d-41bd-a2d5-480d64632269",
                     "expectedControlType": "",
@@ -153,7 +153,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "OpenMenu",
+                    "action": "Open_Menu",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -175,7 +175,7 @@
             "id": "0db6d68a-8fe0-4c06-b616-76e84f939830",
             "actions": [
                 {
-                    "name": "CloseMenu",
+                    "name": "Close_Menu",
                     "type": "Button",
                     "id": "0b048aac-c712-4e16-8176-917ca193a766",
                     "expectedControlType": "",
@@ -193,7 +193,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Navigate",
+                    "name": "Menu_Navigate",
                     "type": "Value",
                     "id": "9070f720-c43b-42af-810d-37cc17dd2a6a",
                     "expectedControlType": "Vector2",
@@ -202,7 +202,7 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "TabSwitch",
+                    "name": "Menu_Switch",
                     "type": "Button",
                     "id": "a3765419-7b61-45bf-a5f9-8ab0a468b29b",
                     "expectedControlType": "",
@@ -219,7 +219,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";ManuMan_PC",
-                    "action": "CloseMenu",
+                    "action": "Close_Menu",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -236,34 +236,56 @@
                 },
                 {
                     "name": "2D Vector",
-                    "id": "269c1383-1975-4979-afed-db8464b1a2bc",
+                    "id": "563f995c-6850-4610-bc67-adb3f0c57d46",
                     "path": "2DVector",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Navigate",
+                    "action": "Menu_Navigate",
                     "isComposite": true,
                     "isPartOfComposite": false
                 },
                 {
                     "name": "up",
-                    "id": "1ab38e14-9214-41ae-b15a-1e865f03f59e",
+                    "id": "6701e5a3-f965-4330-b8a3-cfb0677207b9",
                     "path": "<Keyboard>/w",
                     "interactions": "",
                     "processors": "",
                     "groups": ";ManuMan_PC",
-                    "action": "Navigate",
+                    "action": "Menu_Navigate",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
                 {
                     "name": "down",
-                    "id": "1a03e759-396e-4c19-88af-7d177a266bcf",
+                    "id": "f2d24011-f454-4a4c-93e5-722e7ac2264c",
                     "path": "<Keyboard>/s",
                     "interactions": "",
                     "processors": "",
                     "groups": ";ManuMan_PC",
-                    "action": "Navigate",
+                    "action": "Menu_Navigate",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "left",
+                    "id": "14281e10-eed1-4d1e-b40b-14a952e443be",
+                    "path": "<Keyboard>/a",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";ManuMan_PC",
+                    "action": "Menu_Navigate",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "right",
+                    "id": "b20d95ca-f39c-443e-a235-de51c593adfe",
+                    "path": "<Keyboard>/d",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";ManuMan_PC",
+                    "action": "Menu_Navigate",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -274,7 +296,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";ManuMan_PC",
-                    "action": "TabSwitch",
+                    "action": "Menu_Switch",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -285,7 +307,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";ManuMan_PC",
-                    "action": "TabSwitch",
+                    "action": "Menu_Switch",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

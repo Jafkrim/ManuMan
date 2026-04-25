@@ -177,7 +177,7 @@ MonoBehaviour:
   m_Name: ReflectRenderPass
   m_EditorClassIdentifier: 
   m_Active: 1
-  renderPass: 400
+  renderPass: 300
   passIndex: 0
 --- !u!114 &4569818035768601075
 MonoBehaviour:
@@ -211,8 +211,8 @@ MonoBehaviour:
   m_Name: UniversalBlurFeature
   m_EditorClassIdentifier: 
   m_Active: 1
-  iterations: 5
-  downsample: 1
+  iterations: 8
+  downsample: 4
   enableMipMaps: 1
   scale: 1
   offset: 1
