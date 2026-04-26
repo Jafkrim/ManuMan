@@ -88,14 +88,18 @@ public class SettingsManager : MonoBehaviour
         }
     }
 
-    // Called by UIManager: when opening the options menu
+    // Called by UIManager:
+    // when entering the options menu, the temporary settings are used to track changes without affecting the current settings until the user confirms
     public void InitTempSettings()
     {
         string json = JsonUtility.ToJson(_currentSettings);
         _tempSettings = JsonUtility.FromJson<SettingsData>(json);
     }
 
-    // Called by UIManager: when checking for unsaved changes; when deciding whether to show the "Apply Changes" UI element
+    // Called by UIManager: when deciding whether to show the "Apply Changes" UI element:
+    // 1. when user suddenly press confirm changes after entering the options menu without altering any setting (do not show "Apply Changes" UI element);
+    // 2. when user press confirm changes after altering some settings (show "Apply Changes" UI element);
+    // 3. when user exits the options menu without confirming changes (show "Apply Changes" UI element if there are unsaved changes, otherwise do not show it)
     public bool HasUnsavedChanges()
     {
         if (_tempSettings == null) return false;
@@ -103,7 +107,8 @@ public class SettingsManager : MonoBehaviour
         return JsonUtility.ToJson(_currentSettings) != JsonUtility.ToJson(_tempSettings);
     }
 
-    // Called by UIManager: when confirming and applying changes in the options menu
+    // Called by UIManager:
+    // when confirming and applying changes in "Apply Changes" UI element,  overwrite the current settings, save to JSON file, and apply to the game;
     public void ConfirmAndApply()
     {
         _currentSettings = _tempSettings;
@@ -172,7 +177,8 @@ public class SettingsManager : MonoBehaviour
         }
     }
 
-    // Called by UIManager: when adjusting slider in the options menu
+    // Called by UIManager:
+    // when adjusting slider in the options menu, long pressing the button will adjust the slider speed
     public void AdjustSlider(ref int volumeField, int direction, int multiplier = 1)
     {
         if (_tempSettings == null) return;
@@ -181,7 +187,9 @@ public class SettingsManager : MonoBehaviour
         volumeField = Mathf.Clamp(volumeField + (direction * step), 0, 100);
     }
 
-    // Called by UIManager: when adjusting horizontal button bar in the options menu
+    // Called by UIManager: when adjusting horizontal button bar in the options menu, traversing through the options in a specific order
+    // where the direction determines whether to go to the next or previous option,
+    // also switching quality preset to custom if the adjusted setting is not resolution or vSync and the current quality preset is not custom
     public void AdjustHButtonBar<T>(ref T field, int direction, bool isPreset = false) where T : System.Enum
     {
         if (_tempSettings == null) return;
@@ -203,7 +211,9 @@ public class SettingsManager : MonoBehaviour
         }
     }
 
-    // Called by UIManager: when adjusting toggle button in the options menu
+    // Called by UIManager: when adjusting toggle button in the options menu,
+    // any toggle button will simply flip the boolean value,
+    // no need to determine the direction
     public void AdjustToggleButton()
     {
         if (_tempSettings == null) return;
@@ -212,7 +222,8 @@ public class SettingsManager : MonoBehaviour
     }
 
     // Future
-    // Called by UIManager: when adjusting keybind in the options menu
+    // Called by UIManager:
+    // when adjusting keybind in the options menu
     public void AdjustKeybind()
     {
     }

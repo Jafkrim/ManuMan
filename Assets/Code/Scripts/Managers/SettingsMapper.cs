@@ -6,7 +6,9 @@ using UnityEngine.Rendering.Universal;
 
 public static class SettingsMapper
 {
-    // Called by SettingsManager: when a new scene is loaded; when settings are applied in the options menu
+    // Called by SettingsManager:
+    // when a new scene is loaded
+    // when temporary settings are applied in the options menu
     public static void ApplySettings()
     {
         var sm = SettingsManager.Instance;
