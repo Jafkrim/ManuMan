@@ -603,7 +603,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pauseInEditor: 1
   height: 333.3333
-  curvature: 0.05
+  curvature: 0.04
   depth: 500
   orthographicFOV: 60
   timeScale: 1
@@ -922,7 +922,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: -0.7071068, w: 0.7071068}
   m_LocalPosition: {x: -4, y: 2, z: 0}
-  m_LocalScale: {x: 0.4, y: 1, z: 0.7}
+  m_LocalScale: {x: 0.4, y: 1, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -1038,13 +1038,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1299957538}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.37533024, y: -0.18023993, z: 0.07465782, w: 0.90612745}
+  m_LocalRotation: {x: 0.25000006, y: -0.24999997, z: 0.066987306, w: 0.9330127}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 45, y: -22.5, z: 0}
+  m_LocalEulerAnglesHint: {x: 30, y: -30, z: 0}
 --- !u!1 &1353454060
 GameObject:
   m_ObjectHideFlags: 0
@@ -1452,7 +1452,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: -0.7071068, w: 0.7071068}
   m_LocalPosition: {x: -4, y: 6, z: 0}
-  m_LocalScale: {x: 0.4, y: 1, z: 0.7}
+  m_LocalScale: {x: 0.4, y: 1, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -1576,7 +1576,7 @@ GameObject:
   - component: {fileID: 1655200067}
   m_Layer: 0
   m_Name: Main Camera
-  m_TagString: Untagged
+  m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2136,6 +2136,46 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce42615d655036042adac1eb4bae600b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _currentSettings:
+    audio:
+      masterVolume: 100
+      musicVolume: 100
+      environmentVolume: 100
+      dialogueVolume: 100
+      uiVolume: 100
+      mechanismVolume: 100
+    visual:
+      qualityPreset: 1
+      baseQualityPreset: 1
+      resolution: 0
+      isFullScreen: 1
+      vSync: 1
+      textureMipmap: 2
+      antiAliasing: 1
+      renderScale: 1
+      upscalingFilter: 3
+      shadowQuality: 1
+      screenSpaceEffect: 1
+  _tempSettings:
+    audio:
+      masterVolume: 100
+      musicVolume: 100
+      environmentVolume: 100
+      dialogueVolume: 100
+      uiVolume: 100
+      mechanismVolume: 100
+    visual:
+      qualityPreset: 1
+      baseQualityPreset: 1
+      resolution: 0
+      isFullScreen: 1
+      vSync: 1
+      textureMipmap: 2
+      antiAliasing: 1
+      renderScale: 1
+      upscalingFilter: 3
+      shadowQuality: 1
+      screenSpaceEffect: 1
   gameMixer: {fileID: 24100000, guid: d33428da4cd35ea4ba9559be80b6b1ef, type: 2}
   urpaLowQuality: {fileID: 11400000, guid: 6ba64d1ff3b3ce941bf4adc43c51c37f, type: 2}
   urpaHighQuality: {fileID: 11400000, guid: 74b71d7630fce8d45b227076f10f05fc, type: 2}

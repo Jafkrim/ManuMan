@@ -1,328 +1,333 @@
-using UnityEngine;
-using UnityEngine.SceneManagement;
 using System.IO;
+using UnityEngine;
 using UnityEngine.Audio;
-using UnityEngine.Rendering;
+using UnityEngine.InputSystem;  // Future
 using UnityEngine.Rendering.Universal;
-using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class SettingsManager : MonoBehaviour
 {
     public static SettingsManager Instance;
 
-    [Header("Settings Data")]
-    private SettingData currentSettings = new SettingData();
-    private SettingData tempSettings;
+    [SerializeField] private SettingsData _currentSettings = new SettingsData();
+    [SerializeField] private SettingsData _tempSettings;
 
-    // Final settings. Applied to the game
-    public SettingData CurrentSettings => currentSettings;
+    public SettingsData currentSettings => _currentSettings;    // Final settings. Applied to the game
+    public SettingsData tempSettings => _tempSettings;          // Temporary settings. Used in options menu, not yet saved or applied
 
-    // Temporary settings. Used in menu, not yet saved
-    public SettingData TempSettings => tempSettings;
+    private string SavePath => Path.Combine(Application.persistentDataPath, "gamesettings.json");
 
     [Header("References")]
     public AudioMixer gameMixer;
     public UniversalRenderPipelineAsset urpaLowQuality;
     public UniversalRenderPipelineAsset urpaHighQuality;
     public InputActionAsset gameInput;
-    private Camera mainCamera;
-    private string savePath;
 
-    void Awake()
+    private void Awake()
     {
         if (Instance == null)
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            SceneManager.sceneLoaded += OnSceneLoaded;
+            LoadSettings();
         }
         else
         {
             Destroy(gameObject);
-            return;
         }
+    }
 
-        savePath = Path.Combine(Application.persistentDataPath, "gamesettings.json");
-        LoadSettings();
-        tempSettings = CloneSettings(currentSettings);
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        mainCamera = Camera.main;
-        ApplySettings(currentSettings);
+        SettingsMapper.ApplySettings();
     }
-    
-    private void OnDestroy() => SceneManager.sceneLoaded -= OnSceneLoaded;
 
-    public void ApplySettings(SettingData data)
+    private void LoadSettings()
     {
-        // Audio
-        string[] p = { "masterVolume", "musicVolume", "environmentVolume", "dialogueVolume", "uiVolume", "mechanismVolume" };
-        int[] q = { data.masterVolume, data.musicVolume, data.environmentVolume, data.dialogueVolume, data.uiVolume, data.mechanismVolume };
-        
-        for (int i = 0; i < p.Length; i++)
-            ApplyVolume(p[i], q[i]);
-
-        // Fullscreen and Resolution
-        if (data.isFullScreen)
+        if (File.Exists(SavePath))
         {
-            Screen.SetResolution(Screen.currentResolution.width, Screen.currentResolution.height, FullScreenMode.FullScreenWindow);
+            try
+            {
+                string json = File.ReadAllText(SavePath);
+                _currentSettings = JsonUtility.FromJson<SettingsData>(json);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"Failed to load settings: {e.Message}");
+                _currentSettings = new SettingsData();  // Default settings
+            }
         }
         else
         {
-            // Hardcoded 16:9
-            Vector2Int[] resSteps = { 
-                new Vector2Int(1920, 1080), 
-                new Vector2Int(1600, 900), 
-                new Vector2Int(1280, 720), 
-                new Vector2Int(854, 480) 
-            };
-
-            int idx = Mathf.Clamp(data.resolution, 0, resSteps.Length - 1);
-            Vector2Int target = resSteps[idx];
-            Screen.SetResolution(target.x, target.y, FullScreenMode.Windowed);
+            Debug.Log("No save file found.");
+            _currentSettings = new SettingsData();
+            SaveSettings(); // Default settings
         }
-
-        // URP Type and Texture Mipmap
-        int basePreset = (data.qualityPreset == 2) ? data.baseQualityPreset : data.qualityPreset;
-        GraphicsSettings.renderPipelineAsset = (basePreset == 0) ? urpaLowQuality : urpaHighQuality;
-
-        // Only change Unity QualityLevel when NOT custom
-        if (data.qualityPreset <= 1)
-            QualitySettings.SetQualityLevel(data.qualityPreset, true);
-
-        QualitySettings.globalTextureMipmapLimit = data.textureMipmap;
-
-        // Camera Anti-Aliasing
-        if (mainCamera != null)
-        {
-            var camData = mainCamera.GetUniversalAdditionalCameraData();
-            camData.antialiasing = data.antiAliasing == 2 ? AntialiasingMode.TemporalAntiAliasing : (AntialiasingMode)data.antiAliasing;
-        }
-
-        // Render Scale and Upscaling Filter
-        var activeAsset = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
-
-        if (activeAsset != null)
-        {
-            float[] scales = { 0.75f, 0.875f, 1.0f, 1.125f, 1.25f };
-            activeAsset.renderScale = scales[Mathf.Clamp(data.renderScale, 0, 4)];
-            activeAsset.upscalingFilter = (UpscalingFilterSelection)data.upscalingFilter;
-        }
-
-        // Shadows and V-Sync
-        ApplyShadowDetails(data.shadowQuality);
-        QualitySettings.vSyncCount = data.vSync;
-
-        // Screen Space Effects
-        ApplyRendererFeatures(data.screenSpaceEffect);
     }
 
-    public void ApplyChanges()
+    private void SaveSettings()
     {
-        currentSettings = CloneSettings(tempSettings);
+        try
+        {
+            string json = JsonUtility.ToJson(_currentSettings, true);
+            File.WriteAllText(SavePath, json);
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Failed to save settings: {e.Message}");
+        }
+    }
+
+    // Called by UIManager: when opening the options menu
+    public void InitTempSettings()
+    {
+        string json = JsonUtility.ToJson(_currentSettings);
+        _tempSettings = JsonUtility.FromJson<SettingsData>(json);
+    }
+
+    // Called by UIManager: when checking for unsaved changes; when deciding whether to show the "Apply Changes" UI element
+    public bool HasUnsavedChanges()
+    {
+        if (_tempSettings == null) return false;
+
+        return JsonUtility.ToJson(_currentSettings) != JsonUtility.ToJson(_tempSettings);
+    }
+
+    // Called by UIManager: when confirming and applying changes in the options menu
+    public void ConfirmAndApply()
+    {
+        _currentSettings = _tempSettings;
         SaveSettings();
-        ApplySettings(currentSettings);
+        SettingsMapper.ApplySettings();
     }
 
-    public void DiscardChanges()
+    private void UpdateQualityPreset(QualityPreset qp)
     {
-        tempSettings = CloneSettings(currentSettings);
-        RevertInput();
-        ApplySettings(currentSettings);
-    }
-    
-    public void SaveSettings() {
-        if (gameInput != null)
-            currentSettings.inputBindingOverridesJson = gameInput.SaveBindingOverridesAsJson();
+        _tempSettings.visual.qualityPreset = qp;
 
-        File.WriteAllText(savePath, JsonUtility.ToJson(currentSettings, true));
+        if (qp != QualityPreset.Custom) ApplyPresetLogic(qp);
     }
 
-    public void LoadSettings() {
-        if (File.Exists(savePath)) {
-            currentSettings = JsonUtility.FromJson<SettingData>(File.ReadAllText(savePath));
+    private void ApplyPresetLogic(QualityPreset qp)
+    {
+        var v = _tempSettings.visual;
+        v.baseQualityPreset = qp;
 
-            if (gameInput != null && !string.IsNullOrEmpty(currentSettings.inputBindingOverridesJson))
-                gameInput.LoadBindingOverridesFromJson(currentSettings.inputBindingOverridesJson);
+        switch (qp)
+        {
+            case QualityPreset.Potato:
+                v.textureMipmap = TextureMipmapPreset.Eighth;
+                v.antiAliasing = AntiAliasingPreset.Off;
+                v.renderScale = RenderScalePreset.Percent075;
+                v.upscalingFilter = UpscalingFilterPreset.NearestNeighbor;
+                v.shadowQuality = ShadowQualityPreset.Off;
+                v.screenSpaceEffect = ScreenSpaceEffectPreset.Off;
+                break;
+
+            case QualityPreset.Low:
+                v.textureMipmap = TextureMipmapPreset.Quarter;
+                v.antiAliasing = AntiAliasingPreset.Fxaa;
+                v.renderScale = RenderScalePreset.Percent087;
+                v.upscalingFilter = UpscalingFilterPreset.Fsr1;
+                v.shadowQuality = ShadowQualityPreset.Low;
+                v.screenSpaceEffect = ScreenSpaceEffectPreset.Ssao;
+                break;
+
+            case QualityPreset.Med:
+                v.textureMipmap = TextureMipmapPreset.Half;
+                v.antiAliasing = AntiAliasingPreset.Taa;
+                v.renderScale = RenderScalePreset.Percent100;
+                v.upscalingFilter = UpscalingFilterPreset.Fsr1;
+                v.shadowQuality = ShadowQualityPreset.Medium;
+                v.screenSpaceEffect = ScreenSpaceEffectPreset.SsaoSsgi;
+                break;
+
+            case QualityPreset.High:
+                v.textureMipmap = TextureMipmapPreset.Full;
+                v.antiAliasing = AntiAliasingPreset.Taa;
+                v.renderScale = RenderScalePreset.Percent113;
+                v.upscalingFilter = UpscalingFilterPreset.Bilinear;
+                v.shadowQuality = ShadowQualityPreset.High;
+                v.screenSpaceEffect = ScreenSpaceEffectPreset.SsgiSsr;
+                break;
+
+            case QualityPreset.God:
+                v.textureMipmap = TextureMipmapPreset.Full;
+                v.antiAliasing = AntiAliasingPreset.Taa;
+                v.renderScale = RenderScalePreset.Percent125;
+                v.upscalingFilter = UpscalingFilterPreset.Bilinear;
+                v.shadowQuality = ShadowQualityPreset.High;
+                v.screenSpaceEffect = ScreenSpaceEffectPreset.Full;
+                break;
+        }
+    }
+
+    // Called by UIManager: when adjusting slider in the options menu
+    public void AdjustSlider(ref int volumeField, int direction, int multiplier = 1)
+    {
+        if (_tempSettings == null) return;
+
+        int step = 1 * multiplier; 
+        volumeField = Mathf.Clamp(volumeField + (direction * step), 0, 100);
+    }
+
+    // Called by UIManager: when adjusting horizontal button bar in the options menu
+    public void AdjustHButtonBar<T>(ref T field, int direction, bool isPreset = false) where T : System.Enum
+    {
+        if (_tempSettings == null) return;
+
+        T[] values = (T[])System.Enum.GetValues(typeof(T));
+        int currentIndex = System.Array.IndexOf(values, field);
+        int maxIndex = isPreset ? 1 : values.Length - 1;
+        int nextIndex = Mathf.Clamp(currentIndex + direction, 0, maxIndex);
+
+        if (isPreset)
+        {
+            UpdateQualityPreset((QualityPreset)nextIndex);
         }
         else
         {
-            SaveSettings(); // Create a JSON file with default settings
-        }
+            field = values[nextIndex];
 
-        ApplySettings(currentSettings);
+            if (typeof(T) != typeof(ResolutionPreset) && typeof(T) != typeof(VSyncPreset)) { _tempSettings.visual.qualityPreset = QualityPreset.Custom; }
+        }
     }
 
-    public bool HasPendingChanges() => !tempSettings.IsEqual(currentSettings);
-
-    public void UpdateTempKeybinds() => tempSettings.inputBindingOverridesJson = gameInput.SaveBindingOverridesAsJson();
-
-    public void ChangeIntSetting(ref int settingField, int direction, int maxIndex, bool isQualityPreset = false)
+    // Called by UIManager: when adjusting toggle button in the options menu
+    public void AdjustToggleButton()
     {
-        int nextValue = Mathf.Clamp(settingField + direction, 0, maxIndex);
-        
-        if (nextValue == settingField)
-            return;
+        if (_tempSettings == null) return;
 
-        settingField = nextValue;
-        
-        if (isQualityPreset)
-            ApplyPresetToTemp(nextValue);
-        else
-            tempSettings.qualityPreset = 2; // Switch to Custom
+        _tempSettings.visual.isFullScreen = !_tempSettings.visual.isFullScreen;
     }
 
-    private void ApplyPresetToTemp(int presetIndex)
+    // Future
+    // Called by UIManager: when adjusting keybind in the options menu
+    public void AdjustKeybind()
     {
-        if (presetIndex == 0) // Low
-        {
-            tempSettings.baseQualityPreset = 0;
-            tempSettings.textureMipmap = 2;
-            tempSettings.antiAliasing = 0;
-            tempSettings.renderScale = 0;
-            tempSettings.upscalingFilter = 2;
-            tempSettings.shadowQuality = 1;
-            tempSettings.screenSpaceEffect = 0;
-        }
-        else if (presetIndex == 1) // High
-        {
-            tempSettings.baseQualityPreset = 1;
-            tempSettings.textureMipmap = 0;
-            tempSettings.antiAliasing = 2;
-            tempSettings.renderScale = 4;
-            tempSettings.upscalingFilter = 0;
-            tempSettings.shadowQuality = 3;
-            tempSettings.screenSpaceEffect = 4;
-        }
     }
 
-    private void ApplyVolume(string param, int val) {
-        if (gameMixer == null)
-            return;
-
-        float dB = val <= 0 ? -80f : Mathf.Log10(val / 100f) * 20f;
-        gameMixer.SetFloat(param, dB);
-    }
-
-    private void ApplyShadowDetails(int index)
+    public enum QualityPreset
     {
-        QualitySettings.shadows = (index == 0) ? UnityEngine.ShadowQuality.Disable : UnityEngine.ShadowQuality.All;
-
-        if (index == 0)
-            return;
-
-        float[] shadowDistances = { 0f, 30f, 45f, 60f };
-        QualitySettings.shadowDistance = shadowDistances[Mathf.Clamp(index, 0, 3)];
-        var pipeline = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
-        
-        if (pipeline != null) {
-            int[] mainRes = { 0, 512, 1024, 2048 };
-            int[] atlasRes = { 0, 256, 512, 1024 };
-            var type = typeof(UniversalRenderPipelineAsset);
-            var mainF = type.GetField("m_MainLightShadowmapResolution", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-            var atlasF = type.GetField("m_AdditionalLightsShadowmapResolution", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-            
-            if (mainF != null)
-                mainF.SetValue(pipeline, mainRes[Mathf.Clamp(index, 0, 3)]);
-            if (atlasF != null)
-                atlasF.SetValue(pipeline, atlasRes[Mathf.Clamp(index, 0, 3)]);
-        }
+        Potato = 0,
+        Low = 1,
+        Med = 2,
+        High = 3,
+        God = 4,
+        Custom = 5
     }
 
-    private void ApplyRendererFeatures(int index)
+    public enum ResolutionPreset
     {
-        var pipeline = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
-
-        if (pipeline == null)
-            return;
-
-        var property = typeof(UniversalRenderPipelineAsset).GetProperty("scriptableRendererData", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var rendererData = property?.GetValue(pipeline) as ScriptableRendererData;
-
-        if (rendererData == null)
-            return;
-
-        foreach (var feature in rendererData.rendererFeatures) {
-            if (feature.name.Contains("Screen Space Ambient Occlusion")) feature.SetActive(index == 1 || index == 2 || index == 4);
-            if (feature.name.Contains("Screen Space Global Illumination")) feature.SetActive(index == 2 || index == 3 || index == 4);
-            if (feature.name.Contains("Reflect Render Pass")) feature.SetActive(index == 3 || index == 4);
-        }
+        R1920x1080 = 0,
+        R1600x900 = 1,
+        R1280x720 = 2,
+        R854x480 = 3
     }
 
-    private void RevertInput() {
-        gameInput.RemoveAllBindingOverrides();
-        
-        if (!string.IsNullOrEmpty(currentSettings.inputBindingOverridesJson))
-            gameInput.LoadBindingOverridesFromJson(currentSettings.inputBindingOverridesJson);
+    public enum VSyncPreset
+    {
+        Off = 0,
+        Full = 1,
+        Half = 2
     }
 
-    private SettingData CloneSettings(SettingData source) => JsonUtility.FromJson<SettingData>(JsonUtility.ToJson(source));
+    public enum TextureMipmapPreset
+    {
+        Full = 0,
+        Half = 1,
+        Quarter = 2,
+        Eighth = 3
+    }
 
-    // UI Wrappers
-    public void UI_Preset(int dir) => ChangeIntSetting(ref tempSettings.qualityPreset, dir, 1, true);
-    public void UI_Fullscreen() => tempSettings.isFullScreen = !tempSettings.isFullScreen;
-    public void UI_Resolution(int dir) => ChangeIntSetting(ref tempSettings.resolution, dir, 3);
-    public void UI_AntiAliasing(int dir) => ChangeIntSetting(ref tempSettings.antiAliasing, dir, 2);
-    public void UI_RenderScale(int dir) => ChangeIntSetting(ref tempSettings.renderScale, dir, 4);
-    public void UI_Shadows(int dir) => ChangeIntSetting(ref tempSettings.shadowQuality, dir, 3);
-    public void UI_TextureMipmap(int dir) => ChangeIntSetting(ref tempSettings.textureMipmap, dir, 2);
-    public void UI_Upscaling(int dir) => ChangeIntSetting(ref tempSettings.upscalingFilter, dir, 2);
-    public void UI_SSX(int dir) => ChangeIntSetting(ref tempSettings.screenSpaceEffect, dir, 4);
+    public enum AntiAliasingPreset
+    {
+        Off = 0,
+        Fxaa = 1,
+        Taa = 2
+    }
+
+    public enum RenderScalePreset
+    {
+        Percent075 = 0,
+        Percent087 = 1,
+        Percent100 = 2,
+        Percent113 = 3,
+        Percent125 = 4
+    }
+
+    public enum UpscalingFilterPreset
+    {
+        Bilinear = 1,
+        NearestNeighbor = 2,
+        Fsr1 = 3
+    }
+
+    public enum ShadowQualityPreset
+    {
+        Off = 0,
+        Low = 1,
+        Medium = 2,
+        High = 3
+    }
+
+    public enum ScreenSpaceEffectPreset
+    {
+        Off = 0,
+        Ssao = 1,
+        SsaoSsgi = 2,
+        SsgiSsr = 3,
+        Full = 4
+    }
 
     [System.Serializable]
-    public class SettingData {
-        [Header("Audio")]
+    public class SettingsData
+    {
+        public AudioSettings audio = new();
+        public VisualSettings visual = new();
+        public KeybindSettings keybind = new();
+    }
+
+    [System.Serializable]
+    public class AudioSettings
+    {
         [Range(0, 100)] public int masterVolume = 100;
         [Range(0, 100)] public int musicVolume = 100;
         [Range(0, 100)] public int environmentVolume = 100;
         [Range(0, 100)] public int dialogueVolume = 100;
         [Range(0, 100)] public int uiVolume = 100;
         [Range(0, 100)] public int mechanismVolume = 100;
+    }
 
-        [Header("Graphics")]
-        [Range(0, 2), Tooltip("0:Low\n1:High\n2:Custom")] public int qualityPreset = 1;
-        [HideInInspector] public int baseQualityPreset = 1;
+    [System.Serializable]
+    public class VisualSettings
+    {
+        public QualityPreset qualityPreset = QualityPreset.Low;
+        public QualityPreset baseQualityPreset = QualityPreset.Low;   // Should only be used when qualityPreset is Custom, to store the last chosen preset
+        public ResolutionPreset resolution = ResolutionPreset.R1920x1080;
         public bool isFullScreen = true;
-        [Range(0, 3), Tooltip("0:1080p\n1:900p\n2:720p\n3:480p")] public int resolution = 0;
-        [Range(0, 2), Tooltip("0:Off\n1:Full rate\n2:Half rate")] public int vSync = 1;
-        [Range(0, 3), Tooltip("0:Full resolution\n1:Half resolution\n2:Quarter resolution\n3:Eighth resolution")] public int textureMipmap = 0;
-        [Range(0, 2), Tooltip("0:None\n1:FXAA\n2:TAA")] public int antiAliasing = 2;
-        [Range(0, 4), Tooltip("0:75%\n1:87.5%\n2:100%\n3:112.5%\n4:125%")] public int renderScale = 4;
-        [Range(0, 2), Tooltip("0:Bilinear\n1:Nearest-Neighbor\n2:FSR1.0")] public int upscalingFilter = 0;
-        [Range(0, 3), Tooltip("0:Off\n1:Low (30m, 512 main, 256 atlas)\n2:Med (45m, 1024 main, 512 atlas)\n3:High (60m, 2048 main, 1024 atlas)")] public int shadowQuality = 3;
-        [Range(0, 4), Tooltip("0:Off\n1:SSAO\n2:SSAO + SSGI\n3:SSGI + SSR\n4:SSAO + SSGI + SSR")] public int screenSpaceEffect = 4;
+        public VSyncPreset vSync = VSyncPreset.Full;
+        public TextureMipmapPreset textureMipmap = TextureMipmapPreset.Quarter;
+        public AntiAliasingPreset antiAliasing = AntiAliasingPreset.Fxaa;
+        public RenderScalePreset renderScale = RenderScalePreset.Percent087;
+        public UpscalingFilterPreset upscalingFilter = UpscalingFilterPreset.Fsr1;
+        public ShadowQualityPreset shadowQuality = ShadowQualityPreset.Low;
+        public ScreenSpaceEffectPreset screenSpaceEffect = ScreenSpaceEffectPreset.Ssao;
+    }
 
-        [Header("Keybinds")]
-        public string inputBindingOverridesJson;
-
-        public bool IsEqual(SettingData compared)
-        {
-            if (compared == null)
-                return false;
-
-            return
-                masterVolume == compared.masterVolume &&
-                musicVolume == compared.musicVolume &&
-                environmentVolume == compared.environmentVolume &&
-                dialogueVolume == compared.dialogueVolume &&
-                uiVolume == compared.uiVolume &&
-                mechanismVolume == compared.mechanismVolume &&
-
-                qualityPreset == compared.qualityPreset &&
-                baseQualityPreset == compared.baseQualityPreset &&
-                isFullScreen == compared.isFullScreen &&
-                resolution == compared.resolution &&
-                vSync == compared.vSync &&
-                textureMipmap == compared.textureMipmap &&
-                antiAliasing == compared.antiAliasing &&
-                renderScale == compared.renderScale &&
-                upscalingFilter == compared.upscalingFilter &&
-                shadowQuality == compared.shadowQuality &&
-                screenSpaceEffect == compared.screenSpaceEffect &&
-
-                inputBindingOverridesJson == compared.inputBindingOverridesJson;
-        }
+    // Future
+    [System.Serializable]
+    public class KeybindSettings
+    {
     }
 }

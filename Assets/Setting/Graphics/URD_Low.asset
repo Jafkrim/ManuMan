@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: UniversalBlurFeature
   m_EditorClassIdentifier: 
   m_Active: 1
-  iterations: 8
+  iterations: 6
   downsample: 4
   enableMipMaps: 1
   scale: 1
@@ -35,8 +35,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5028f2f00df2eb2418e473937e9ae556, type: 3}
   m_Name: ReflectRenderPass
   m_EditorClassIdentifier: 
-  m_Active: 1
-  renderPass: 400
+  m_Active: 0
+  renderPass: 300
   passIndex: 0
 --- !u!114 &-615656989769473554
 MonoBehaviour:
@@ -214,7 +214,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8826dbbd2f20a84180629a9ae196e22, type: 3}
   m_Name: ScreenSpaceGlobalIlluminationURP
   m_EditorClassIdentifier: 
-  m_Active: 1
+  m_Active: 0
   m_Shader: {fileID: 4800000, guid: 052b080a79c052c4993acc96081d70b1, type: 3}
   m_RenderingDebugger: 0
   m_ReflectionProbes: 0
