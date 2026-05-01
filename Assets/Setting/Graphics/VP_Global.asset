@@ -92,7 +92,7 @@ MonoBehaviour:
     m_Value: 24
   stepSize:
     m_OverrideState: 1
-    m_Value: 0.05
+    m_Value: 0.15
   thickness:
     m_OverrideState: 1
     m_Value: 0.2
@@ -789,8 +789,8 @@ MonoBehaviour:
     m_OverrideState: 0
     m_Value: 0
   density:
-    m_OverrideState: 0
-    m_Value: 0.2
+    m_OverrideState: 1
+    m_Value: 0.1
   attenuationDistance:
     m_OverrideState: 0
     m_Value: 128
@@ -799,7 +799,7 @@ MonoBehaviour:
     m_Value: 1
   anisotropy:
     m_OverrideState: 1
-    m_Value: 0.3
+    m_Value: 0.1
   scattering:
     m_OverrideState: 1
     m_Value: 0.2

@@ -66,6 +66,48 @@ MonoBehaviour:
     depthCompareFunction: 5
     enableWrite: 0
     stencilSettings:
+      overrideStencilState: 1
+      stencilReference: 1
+      stencilCompareFunction: 6
+      passOperation: 2
+      failOperation: 0
+      zFailOperation: 0
+    cameraSettings:
+      overrideCamera: 0
+      restoreCamera: 1
+      offset: {x: 0, y: 0, z: 0, w: 0}
+      cameraFieldOfView: 60
+--- !u!114 &-2501093513901121053
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b3d386ba5cd94485973aee1479b272e, type: 3}
+  m_Name: PlayerShown
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  settings:
+    passTag: PlayerShown
+    Event: 300
+    filterSettings:
+      RenderQueueType: 0
+      LayerMask:
+        serializedVersion: 2
+        m_Bits: 8
+      PassNames: []
+    overrideMaterial: {fileID: 0}
+    overrideMaterialPassIndex: 0
+    overrideShader: {fileID: 0}
+    overrideShaderPassIndex: 0
+    overrideMode: 0
+    overrideDepthState: 0
+    depthCompareFunction: 4
+    enableWrite: 1
+    stencilSettings:
       overrideStencilState: 0
       stencilReference: 0
       stencilCompareFunction: 8
@@ -99,8 +141,9 @@ MonoBehaviour:
   - {fileID: 4569818035768601075}
   - {fileID: 375133343146370588}
   - {fileID: -4077356436026085259}
+  - {fileID: -2501093513901121053}
   - {fileID: 6486846107387020274}
-  m_RendererFeatureMap: f669f88509700aa36f8a4ed2ca47ac09f32929a64a416b3f1ce6a4bdc9bd340575300398ec516ac7f2c36d772ae8055a
+  m_RendererFeatureMap: f669f88509700aa36f8a4ed2ca47ac09f32929a64a416b3f1ce6a4bdc9bd340575300398ec516ac7e3e1e351b3544addf2c36d772ae8055a
   m_UseNativeRenderPass: 0
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   shaders:

@@ -41,7 +41,7 @@ Material:
     - _BinarySamples: 8
     - _MinSmoothness: 0.1
     - _Samples: 24
-    - _StepSize: 0.05
+    - _StepSize: 0.15
     - _Thickness: 0.2
     m_Colors: []
   m_BuildTextureStacks: []
