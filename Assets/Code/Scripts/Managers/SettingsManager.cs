@@ -15,7 +15,8 @@ public class SettingsManager : MonoBehaviour
     public SettingsData currentSettings => _currentSettings;    // Final settings. Applied to the game
     public SettingsData tempSettings => _tempSettings;          // Temporary settings. Used in options menu, not yet saved or applied
 
-    private string SavePath => Path.Combine(Application.persistentDataPath, "gamesettings.json");
+    private string _savePath => Path.Combine(Application.persistentDataPath, "gamesettings.json");
+    private bool _toggleButtonHeld;
 
     [Header("References")]
     public AudioMixer gameMixer;
@@ -54,11 +55,11 @@ public class SettingsManager : MonoBehaviour
 
     private void LoadSettings()
     {
-        if (File.Exists(SavePath))
+        if (File.Exists(_savePath))
         {
             try
             {
-                string json = File.ReadAllText(SavePath);
+                string json = File.ReadAllText(_savePath);
                 _currentSettings = JsonUtility.FromJson<SettingsData>(json);
             }
             catch (System.Exception e)
@@ -80,7 +81,7 @@ public class SettingsManager : MonoBehaviour
         try
         {
             string json = JsonUtility.ToJson(_currentSettings, true);
-            File.WriteAllText(SavePath, json);
+            File.WriteAllText(_savePath, json);
         }
         catch (System.Exception e)
         {
@@ -125,54 +126,53 @@ public class SettingsManager : MonoBehaviour
 
     private void ApplyPresetLogic(QualityPreset qp)
     {
-        var v = _tempSettings.visual;
-        v.baseQualityPreset = qp;
+        _tempSettings.visual.baseQualityPreset = qp;
 
         switch (qp)
         {
             case QualityPreset.Potato:
-                v.textureMipmap = TextureMipmapPreset.Eighth;
-                v.antiAliasing = AntiAliasingPreset.Off;
-                v.renderScale = RenderScalePreset.Percent075;
-                v.upscalingFilter = UpscalingFilterPreset.NearestNeighbor;
-                v.shadowQuality = ShadowQualityPreset.Off;
-                v.screenSpaceEffect = ScreenSpaceEffectPreset.Off;
+                _tempSettings.visual.textureMipmap = TextureMipmapPreset.Eighth;
+                _tempSettings.visual.antiAliasing = AntiAliasingPreset.Off;
+                _tempSettings.visual.renderScale = RenderScalePreset.Percent075;
+                _tempSettings.visual.upscalingFilter = UpscalingFilterPreset.NearestNeighbor;
+                _tempSettings.visual.shadowQuality = ShadowQualityPreset.Off;
+                _tempSettings.visual.screenSpaceEffect = ScreenSpaceEffectsPreset.Off;
                 break;
 
             case QualityPreset.Low:
-                v.textureMipmap = TextureMipmapPreset.Quarter;
-                v.antiAliasing = AntiAliasingPreset.Fxaa;
-                v.renderScale = RenderScalePreset.Percent087;
-                v.upscalingFilter = UpscalingFilterPreset.Fsr1;
-                v.shadowQuality = ShadowQualityPreset.Low;
-                v.screenSpaceEffect = ScreenSpaceEffectPreset.Ssao;
+                _tempSettings.visual.textureMipmap = TextureMipmapPreset.Quarter;
+                _tempSettings.visual.antiAliasing = AntiAliasingPreset.Fxaa;
+                _tempSettings.visual.renderScale = RenderScalePreset.Percent087;
+                _tempSettings.visual.upscalingFilter = UpscalingFilterPreset.Fsr1;
+                _tempSettings.visual.shadowQuality = ShadowQualityPreset.Low;
+                _tempSettings.visual.screenSpaceEffect = ScreenSpaceEffectsPreset.Ssao;
                 break;
 
             case QualityPreset.Med:
-                v.textureMipmap = TextureMipmapPreset.Half;
-                v.antiAliasing = AntiAliasingPreset.Taa;
-                v.renderScale = RenderScalePreset.Percent100;
-                v.upscalingFilter = UpscalingFilterPreset.Fsr1;
-                v.shadowQuality = ShadowQualityPreset.Medium;
-                v.screenSpaceEffect = ScreenSpaceEffectPreset.SsaoSsgi;
+                _tempSettings.visual.textureMipmap = TextureMipmapPreset.Half;
+                _tempSettings.visual.antiAliasing = AntiAliasingPreset.Taa;
+                _tempSettings.visual.renderScale = RenderScalePreset.Percent100;
+                _tempSettings.visual.upscalingFilter = UpscalingFilterPreset.Fsr1;
+                _tempSettings.visual.shadowQuality = ShadowQualityPreset.Medium;
+                _tempSettings.visual.screenSpaceEffect = ScreenSpaceEffectsPreset.SsaoSsgi;
                 break;
 
             case QualityPreset.High:
-                v.textureMipmap = TextureMipmapPreset.Full;
-                v.antiAliasing = AntiAliasingPreset.Taa;
-                v.renderScale = RenderScalePreset.Percent113;
-                v.upscalingFilter = UpscalingFilterPreset.Bilinear;
-                v.shadowQuality = ShadowQualityPreset.High;
-                v.screenSpaceEffect = ScreenSpaceEffectPreset.SsgiSsr;
+                _tempSettings.visual.textureMipmap = TextureMipmapPreset.Full;
+                _tempSettings.visual.antiAliasing = AntiAliasingPreset.Taa;
+                _tempSettings.visual.renderScale = RenderScalePreset.Percent113;
+                _tempSettings.visual.upscalingFilter = UpscalingFilterPreset.Bilinear;
+                _tempSettings.visual.shadowQuality = ShadowQualityPreset.High;
+                _tempSettings.visual.screenSpaceEffect = ScreenSpaceEffectsPreset.SsgiSsr;
                 break;
 
             case QualityPreset.God:
-                v.textureMipmap = TextureMipmapPreset.Full;
-                v.antiAliasing = AntiAliasingPreset.Taa;
-                v.renderScale = RenderScalePreset.Percent125;
-                v.upscalingFilter = UpscalingFilterPreset.Bilinear;
-                v.shadowQuality = ShadowQualityPreset.High;
-                v.screenSpaceEffect = ScreenSpaceEffectPreset.Full;
+                _tempSettings.visual.textureMipmap = TextureMipmapPreset.Full;
+                _tempSettings.visual.antiAliasing = AntiAliasingPreset.Taa;
+                _tempSettings.visual.renderScale = RenderScalePreset.Percent125;
+                _tempSettings.visual.upscalingFilter = UpscalingFilterPreset.Bilinear;
+                _tempSettings.visual.shadowQuality = ShadowQualityPreset.High;
+                _tempSettings.visual.screenSpaceEffect = ScreenSpaceEffectsPreset.Full;
                 break;
         }
     }
@@ -195,30 +195,45 @@ public class SettingsManager : MonoBehaviour
         if (_tempSettings == null) return;
 
         T[] values = (T[])System.Enum.GetValues(typeof(T));
-        int currentIndex = System.Array.IndexOf(values, field);
-        int maxIndex = isPreset ? 1 : values.Length - 1;
-        int nextIndex = Mathf.Clamp(currentIndex + direction, 0, maxIndex);
 
         if (isPreset)
         {
-            UpdateQualityPreset((QualityPreset)nextIndex);
-        }
-        else
-        {
-            field = values[nextIndex];
+            var current = _tempSettings.visual.qualityPreset;
 
-            if (typeof(T) != typeof(ResolutionPreset) && typeof(T) != typeof(VSyncPreset)) { _tempSettings.visual.qualityPreset = QualityPreset.Custom; }
+            QualityPreset anchor =
+                current == QualityPreset.Custom
+                ? _tempSettings.visual.baseQualityPreset
+                : current;
+
+            int anchorIndex = System.Array.IndexOf(values, anchor);
+            int nextIndex = anchorIndex + direction;
+            nextIndex = Mathf.Clamp(nextIndex, 0, values.Length - 2);
+            UpdateQualityPreset((QualityPreset)(object)values[nextIndex]);
+            return;
         }
+
+        int currentIndex = System.Array.IndexOf(values, field);
+        int next = currentIndex + direction;
+        next = Mathf.Clamp(next, 0, values.Length - 1);
+        field = values[next];
+
+        if (typeof(T) != typeof(ResolutionPreset) && typeof(T) != typeof(VSyncPreset)) _tempSettings.visual.qualityPreset = QualityPreset.Custom;
     }
 
     // Called by UIManager: when adjusting toggle button in the options menu,
     // any toggle button will simply flip the boolean value,
     // no need to determine the direction
-    public void AdjustToggleButton()
+    public void AdjustToggleButton(ref bool field, bool isPressed)
     {
         if (_tempSettings == null) return;
 
-        _tempSettings.visual.isFullScreen = !_tempSettings.visual.isFullScreen;
+        if (isPressed && !_toggleButtonHeld)
+        {
+            field = !field;
+            _toggleButtonHeld = true;
+        }
+
+        if (!isPressed) _toggleButtonHeld = false;
     }
 
     // Future
@@ -292,7 +307,7 @@ public class SettingsManager : MonoBehaviour
         High = 3
     }
 
-    public enum ScreenSpaceEffectPreset
+    public enum ScreenSpaceEffectsPreset
     {
         Off = 0,
         Ssao = 1,
@@ -326,14 +341,14 @@ public class SettingsManager : MonoBehaviour
         public QualityPreset qualityPreset = QualityPreset.Low;
         public QualityPreset baseQualityPreset = QualityPreset.Low;   // Should only be used when qualityPreset is Custom, to store the last chosen preset
         public ResolutionPreset resolution = ResolutionPreset.R1920x1080;
-        public bool isFullScreen = true;
+        public bool fullScreen = true;
         public VSyncPreset vSync = VSyncPreset.Full;
         public TextureMipmapPreset textureMipmap = TextureMipmapPreset.Quarter;
         public AntiAliasingPreset antiAliasing = AntiAliasingPreset.Fxaa;
         public RenderScalePreset renderScale = RenderScalePreset.Percent087;
         public UpscalingFilterPreset upscalingFilter = UpscalingFilterPreset.Fsr1;
         public ShadowQualityPreset shadowQuality = ShadowQualityPreset.Low;
-        public ScreenSpaceEffectPreset screenSpaceEffect = ScreenSpaceEffectPreset.Ssao;
+        public ScreenSpaceEffectsPreset screenSpaceEffect = ScreenSpaceEffectsPreset.Ssao;
     }
 
     // Future

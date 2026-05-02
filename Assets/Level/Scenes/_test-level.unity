@@ -1205,7 +1205,7 @@ GameObject:
   - component: {fileID: 1353454062}
   - component: {fileID: 1353454061}
   m_Layer: 0
-  m_Name: Input Manager
+  m_Name: Input System
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2438,7 +2438,7 @@ MonoBehaviour:
       qualityPreset: 1
       baseQualityPreset: 1
       resolution: 0
-      isFullScreen: 1
+      fullScreen: 1
       vSync: 1
       textureMipmap: 2
       antiAliasing: 1
@@ -2458,7 +2458,7 @@ MonoBehaviour:
       qualityPreset: 1
       baseQualityPreset: 1
       resolution: 0
-      isFullScreen: 1
+      fullScreen: 1
       vSync: 1
       textureMipmap: 2
       antiAliasing: 1
@@ -9453,6 +9453,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8844525608605257536}
+  - component: {fileID: 8844525608605257539}
+  - component: {fileID: 8844525608605257538}
+  - component: {fileID: 8844525608605257537}
   m_Layer: 3
   m_Name: ManuMan
   m_TagString: Untagged
@@ -10798,6 +10801,55 @@ Transform:
   - {fileID: 4398101563057923219}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!114 &8844525608605257537
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8211682263318091258}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbbed50d16e50294885a9177c2aab746, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &8844525608605257538
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8211682263318091258}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d86c34f8e5e46e649b9c13aa1d5b6cbe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _leftHand: {fileID: 5684790295503605232}
+  _rightHand: {fileID: 7996131540849032972}
+  _leftFoot: {fileID: 8303110171197907307}
+  _rightFoot: {fileID: 8515433541431827162}
+  _leftHandJoint: {fileID: 5684790295503605231}
+  _rightHandJoint: {fileID: 7996131540849032971}
+  _leftFootJoint: {fileID: 8303110171197907306}
+  _rightFootJoint: {fileID: 8515433541431827161}
+  _forceMultiplier: 50
+--- !u!114 &8844525608605257539
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8211682263318091258}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52eed47ffde48fc4ab10efb7cabe753f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _movementState: 0
+  _actionState: 0
+  _physics: {fileID: 8844525608605257538}
+  _interaction: {fileID: 8844525608605257537}
 --- !u!224 &8859797286020902770
 RectTransform:
   m_ObjectHideFlags: 0
@@ -11227,8 +11279,8 @@ SceneRoots:
   m_Roots:
   - {fileID: 505893774}
   - {fileID: 7713587533096408063}
-  - {fileID: 652188490}
   - {fileID: 1353454062}
+  - {fileID: 652188490}
   - {fileID: 2114237567}
   - {fileID: 6546788144454887358}
   - {fileID: 6310556510232058774}

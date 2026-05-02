@@ -18,8 +18,8 @@ public static class SettingsMapper
         var c = Camera.main;
 
         ApplyAudio(a);
-        ApplyQualityPreset(v);
-        ApplyResolution(v.resolution, v.isFullScreen);
+        ApplyQualityLevel(v.qualityPreset == SettingsManager.QualityPreset.Custom ? v.baseQualityPreset : v.qualityPreset);
+        ApplyResolution(v.resolution, v.fullScreen);
         ApplyVSync(v.vSync);
         ApplyTextureMipmap(v.textureMipmap);
         ApplyAntiAliasing(c, v.antiAliasing);
@@ -49,23 +49,28 @@ public static class SettingsMapper
         m.SetFloat(audioName, dB);
     }
 
-    private static void ApplyQualityPreset(SettingsManager.VisualSettings v)
+    private static void ApplyQualityLevel(SettingsManager.QualityPreset qp)
     {
-        SettingsManager.QualityPreset qp = (v.qualityPreset == SettingsManager.QualityPreset.Custom) 
-            ? v.baseQualityPreset 
-            : v.qualityPreset;
-
         switch (qp)
         {
-            // Low sample quality
+            // Low sample, 1 cascade shadow, and hard shadows
             case SettingsManager.QualityPreset.Potato:
+                QualitySettings.SetQualityLevel(0, true);
+                break;
+
             case SettingsManager.QualityPreset.Low:
+                QualitySettings.SetQualityLevel(0, true);
+                break;
+
             case SettingsManager.QualityPreset.Med:
                 QualitySettings.SetQualityLevel(0, true);
                 break;
 
-            // High sample quality
+            // High sample, 4 cascade shadows, and soft shadows
             case SettingsManager.QualityPreset.High:
+                QualitySettings.SetQualityLevel(1, true);
+                break;
+
             case SettingsManager.QualityPreset.God:
                 QualitySettings.SetQualityLevel(1, true);
                 break;
@@ -181,7 +186,7 @@ public static class SettingsMapper
         }
     }
 
-    private static void ApplyScreenSpaceEffects(SettingsManager.ScreenSpaceEffectPreset sse)
+    private static void ApplyScreenSpaceEffects(SettingsManager.ScreenSpaceEffectsPreset sse)
     {
         var urp = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
 
@@ -204,11 +209,11 @@ public static class SettingsMapper
 
             bool activate = sse switch
             {
-                SettingsManager.ScreenSpaceEffectPreset.Off => false,
-                SettingsManager.ScreenSpaceEffectPreset.Ssao => isSsao,
-                SettingsManager.ScreenSpaceEffectPreset.SsaoSsgi => isSsao || isSsgi,
-                SettingsManager.ScreenSpaceEffectPreset.SsgiSsr => isSsgi || isSsr,
-                SettingsManager.ScreenSpaceEffectPreset.Full => true,
+                SettingsManager.ScreenSpaceEffectsPreset.Off => false,
+                SettingsManager.ScreenSpaceEffectsPreset.Ssao => isSsao,
+                SettingsManager.ScreenSpaceEffectsPreset.SsaoSsgi => isSsao || isSsgi,
+                SettingsManager.ScreenSpaceEffectsPreset.SsgiSsr => isSsgi || isSsr,
+                SettingsManager.ScreenSpaceEffectsPreset.Full => true,
                 _ => false
             };
 
