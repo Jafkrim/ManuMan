@@ -201,9 +201,7 @@ public class SettingsManager : MonoBehaviour
             var current = _tempSettings.visual.qualityPreset;
 
             QualityPreset anchor =
-                current == QualityPreset.Custom
-                ? _tempSettings.visual.baseQualityPreset
-                : current;
+                current == QualityPreset.Custom ? _tempSettings.visual.baseQualityPreset : current;
 
             int anchorIndex = System.Array.IndexOf(values, anchor);
             int nextIndex = anchorIndex + direction;

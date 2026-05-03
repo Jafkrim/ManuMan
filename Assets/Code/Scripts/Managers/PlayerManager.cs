@@ -9,72 +9,112 @@ public class PlayerManager : MonoBehaviour
     [Header("References")]
     [SerializeField] private PlayerPhysics _physics;
     [SerializeField] private PlayerInteraction _interaction;
-    private readonly List<ConditionEffect> _activeConditions = new();
+
+    private readonly List<ConditionEffect> _conditions = new();
+
+    private PlayerPhysics.LimbType? _activeLimb;
 
     public MovementState movementState => _movementState;
     public ActionState actionState => _actionState;
-    public PlayerPhysics physics => _physics;
-    public PlayerInteraction interaction => _interaction;
+    public PlayerPhysics.LimbType? ActiveLimb => _activeLimb;
 
     private void Update()
     {
-        UpdateConditions();
+        TickConditions();
+
+        HandleLimbSelection();
+        HandleLimbMovement();
     }
 
-    public void SetMovementState(MovementState state)
+    // ---------------- INPUT ----------------
+
+    private void HandleLimbSelection()
     {
-        _movementState = state;
+        if (Input.GetKeyDown(KeyCode.A))
+            _activeLimb = PlayerPhysics.LimbType.LeftHand;
+
+        else if (Input.GetKeyDown(KeyCode.F))
+            _activeLimb = PlayerPhysics.LimbType.RightHand;
+
+        else if (Input.GetKeyDown(KeyCode.S))
+            _activeLimb = PlayerPhysics.LimbType.LeftFoot;
+
+        else if (Input.GetKeyDown(KeyCode.D))
+            _activeLimb = PlayerPhysics.LimbType.RightFoot;
     }
 
-    public void SetActionState(ActionState state)
+    private void HandleLimbMovement()
     {
-        _actionState = state;
+        if (_activeLimb == null) return;
+        if (!Input.GetMouseButton(0)) return; // LMB required
+        if (!CanMove()) return;
+
+        Vector2 mouseDelta = GetMouseDelta();
+
+        // small deadzone to avoid jitter
+        if (mouseDelta.sqrMagnitude < 0.0001f) return;
+
+        MoveLimb(_activeLimb.Value, mouseDelta);
     }
 
-    public bool HasCondition(ConditionType type)
+    private Vector2 GetMouseDelta()
     {
-        return _activeConditions.Exists(c => c.type == type);
+        return new Vector2(
+            Input.GetAxis("Mouse X"),
+            Input.GetAxis("Mouse Y")
+        );
     }
 
-    private void UpdateConditions()
+    // ---------------- CORE CONTROL ----------------
+
+    public void MoveLimb(PlayerPhysics.LimbType limb, Vector2 input)
     {
-        for (int i = _activeConditions.Count - 1; i >= 0; i--)
+        _physics.SetLimbInput(limb, input);
+    }
+
+    public void TryInteract(Transform cam)
+    {
+        if (!CanAct()) return;
+        _interaction.TryInteract(this, cam);
+    }
+
+    // ---------------- STATE ----------------
+
+    public void SetMovementState(MovementState state) => _movementState = state;
+    public void SetActionState(ActionState state) => _actionState = state;
+
+    public bool CanMove() => _movementState != MovementState.Falling;
+    public bool CanAct() => _actionState != ActionState.Locked;
+
+    // ---------------- CONDITIONS ----------------
+
+    private void TickConditions()
+    {
+        for (int i = _conditions.Count - 1; i >= 0; i--)
         {
-            var c = _activeConditions[i];
-            c.duration -= Time.deltaTime;
+            _conditions[i].duration -= Time.deltaTime;
 
-            if (c.duration <= 0f)
-                _activeConditions.RemoveAt(i);
+            if (_conditions[i].duration <= 0f)
+                _conditions.RemoveAt(i);
         }
     }
 
     public void AddCondition(ConditionType type, float duration, float intensity)
     {
-        // check if already exists
-        for (int i = 0; i < _activeConditions.Count; i++)
+        for (int i = 0; i < _conditions.Count; i++)
         {
-            if (_activeConditions[i].type == type)
+            if (_conditions[i].type == type)
             {
-                // refresh + overwrite stronger effect
-                _activeConditions[i].duration = Mathf.Max(_activeConditions[i].duration, duration);
-                _activeConditions[i].intensity = intensity;
+                _conditions[i].duration = Mathf.Max(_conditions[i].duration, duration);
+                _conditions[i].intensity = intensity;
                 return;
             }
         }
 
-        // if not exists → add new
-        _activeConditions.Add(new ConditionEffect
-        {
-            type = type,
-            duration = duration,
-            intensity = intensity
-        });
+        _conditions.Add(new ConditionEffect(type, duration, intensity));
     }
 
-    public void RemoveCondition(ConditionType type)
-    {
-        _activeConditions.RemoveAll(c => c.type == type);
-    }
+    // ---------------- ENUMS ----------------
 
     public enum MovementState
     {
@@ -100,11 +140,17 @@ public class PlayerManager : MonoBehaviour
         CameraShake
     }
 
-    [System.Serializable]
     private class ConditionEffect
     {
         public ConditionType type;
         public float duration;
         public float intensity;
+
+        public ConditionEffect(ConditionType t, float d, float i)
+        {
+            type = t;
+            duration = d;
+            intensity = i;
+        }
     }
 }
