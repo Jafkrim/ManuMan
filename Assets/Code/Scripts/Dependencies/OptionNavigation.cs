@@ -1,14 +1,13 @@
-using System.Collections;
-using UnityEngine;
-using TMPro;
-using UnityEngine.InputSystem;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
 using System;
-using System.Data.Common;
-using Unity.Entities.UniversalDelegates;
+using System.Collections;
+using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
-public class OptionManager : MonoBehaviour
+public class OptionNavigation : MonoBehaviour
 {
     private const int TabCount = 4;
 
@@ -39,6 +38,21 @@ public class OptionManager : MonoBehaviour
     private int confirmPanelOpenedFrame = -1;
 
     public SettingsManager settingsManager;
+
+    private Dictionary<int, int> tabSelectionMemory = new Dictionary<int, int>();
+
+    public void SaveCurrentIndex()
+    {
+        tabSelectionMemory[currentTabIndex] = currentSelectionIndex;
+    }
+
+    public void LoadCurrentIndex()
+    {
+        if (tabSelectionMemory.TryGetValue(currentTabIndex, out int index))
+            currentSelectionIndex = index;
+        else
+            currentSelectionIndex = 0;
+    }
 
     private void Awake()
     {
@@ -165,15 +179,18 @@ public class OptionManager : MonoBehaviour
 
         if (uiOption.activeSelf)
         {
+            SaveCurrentIndex();
+
             if (value > 0)
             {
-                currentTabIndex = (currentTabIndex + 1) % TabCount;
+                currentTabIndex = Mathf.Min(currentTabIndex + 1, TabCount - 1);
             }
             else if (value < 0)
             {
-                currentTabIndex = (currentTabIndex - 1 + TabCount) % TabCount;
+                currentTabIndex = Mathf.Max(currentTabIndex - 1, 0);
             }
-            currentSelectionIndex = 0;
+
+            LoadCurrentIndex();
 
             openPanel();
 
@@ -221,11 +238,11 @@ public class OptionManager : MonoBehaviour
 
             if (value > 0)
             {
-                currentSelectionIndex = (currentSelectionIndex + 1) % panel.childCount;
+                currentSelectionIndex = Mathf.Min(currentSelectionIndex + 1, panel.childCount - 1);
             }
             else if (value < 0)
             {
-                currentSelectionIndex = (currentSelectionIndex - 1 + panel.childCount) % panel.childCount;
+                currentSelectionIndex = Mathf.Max(currentSelectionIndex - 1, 0);
             }
 
             SelectCurrentOption();
@@ -349,12 +366,19 @@ public class OptionManager : MonoBehaviour
         if (tabButton == null) return;
 
         SendPointerEnter(tabButton);
+
         for (int i = TabCount; i < TabCount * 2; i++)
         {
             if (i == currentTabIndex + TabCount)
                 uiOption.transform.GetChild(0).GetChild(i).gameObject.SetActive(true);
             else
                 uiOption.transform.GetChild(0).GetChild(i).gameObject.SetActive(false);
+        }
+
+        Transform panel = GetCurrentPanel();
+        if (panel != null)
+        {
+            currentSelectionIndex = Mathf.Clamp(currentSelectionIndex, 0, panel.childCount - 1);
         }
 
         SelectCurrentOption();
@@ -511,7 +535,7 @@ public class OptionManager : MonoBehaviour
 
         UpdateOptionValueAndToggle(0, visual.qualityPreset.ToString(), (int)visual.qualityPreset);
         UpdateOptionValueAndToggle(1, FormatResolution(visual.resolution), (int)visual.resolution);
-        UpdateOptionToggle(2, visual.isFullScreen, visual.isFullScreen ? "On" : "Off");
+        UpdateOptionToggle(2, visual.fullScreen, visual.fullScreen ? "On" : "Off");
         UpdateOptionValueAndToggle(3, visual.vSync.ToString(), (int)visual.vSync);
         UpdateOptionValueAndToggle(4, visual.textureMipmap.ToString(), (int)visual.textureMipmap);
         UpdateOptionValueAndToggle(5, visual.antiAliasing.ToString(), (int)visual.antiAliasing);
@@ -584,8 +608,7 @@ public class OptionManager : MonoBehaviour
         {
             case 0:
                 settingsManager.AdjustHButtonBar(ref visual.qualityPreset, direction, true);
-                UpdateValueLabel(visual.qualityPreset.ToString());
-                SetOptionToggleIndex(GetCurrentOption(), (int)visual.qualityPreset);
+                SyncGraphicsTabUI();
                 break;
             case 1:
                 settingsManager.AdjustHButtonBar(ref visual.resolution, direction);
@@ -593,8 +616,8 @@ public class OptionManager : MonoBehaviour
                 SetOptionToggleIndex(GetCurrentOption(), (int)visual.resolution);
                 break;
             case 2:
-                settingsManager.AdjustToggleButton();
-                UpdateToggleValue(visual.isFullScreen);
+                settingsManager.AdjustToggleButton(ref visual.fullScreen, true);
+                UpdateToggleValue(visual.fullScreen);
                 break;
             case 3:
                 settingsManager.AdjustHButtonBar(ref visual.vSync, direction);
@@ -631,6 +654,10 @@ public class OptionManager : MonoBehaviour
                 UpdateValueLabel(visual.screenSpaceEffect.ToString());
                 SetOptionToggleIndex(GetCurrentOption(), (int)visual.screenSpaceEffect);
                 break;
+        }
+        if (currentSelectionIndex >= 4 && currentSelectionIndex <= 9)
+        {
+            UpdateOptionValueAndToggle(0, visual.qualityPreset.ToString(), (int)visual.qualityPreset);
         }
     }
 

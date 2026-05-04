@@ -1,12 +1,9 @@
 using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using TMPro;
-using UnityEngine.InputSystem;
+using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
-using System.IO.Compression;
-using System.Diagnostics;
 
 public class UIManager : MonoBehaviour
 {
@@ -161,9 +158,11 @@ public class UIManager : MonoBehaviour
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
             if (playerInput != null)
+            {
                 playerInput.SwitchCurrentActionMap("Player");
                 UnityEngine.Debug.Log("Current Action Map: " + playerInput.currentActionMap.name);
-            
+            }
+
             if (blurRoutine != null)
                 StopCoroutine(blurRoutine);
 
@@ -199,13 +198,13 @@ public class UIManager : MonoBehaviour
         uiPause.SetActive(false);
         uiOption.SetActive(true);
 
-        var optionManager = FindObjectOfType<OptionManager>();
-        optionManager.currentSelectionIndex = 0;
-        optionManager.currentTabIndex = 0;
+        var optionNavigation = FindObjectOfType<OptionNavigation>();
+        optionNavigation.currentTabIndex = 0;   // set tab FIRST
+        optionNavigation.LoadCurrentIndex();
 
         var settingManager = FindObjectOfType<SettingsManager>();
         settingManager.InitTempSettings();
-        optionManager.SyncCurrentTabUI();
+        optionNavigation.SyncCurrentTabUI();
 
         Transform audioButton = uiOption.transform.GetChild(0).GetChild(0);
         Transform OptionPanel = uiOption.transform.GetChild(0);
@@ -254,13 +253,15 @@ public class UIManager : MonoBehaviour
         // UnityEngine.Debug.Log("Navigate Input Value: " + value);
         if (uiPause.activeSelf)
         {
+            int maxIndex = 2;
+
             if (value > 0)
             {
-                buttonIndex = (buttonIndex + 1) % 3;
+                buttonIndex = Mathf.Min(buttonIndex + 1, maxIndex);
             }
             else if (value < 0)
             {
-                buttonIndex = (buttonIndex - 1 + 3) % 3;
+                buttonIndex = Mathf.Max(buttonIndex - 1, 0);
             }
 
             switch (buttonIndex)

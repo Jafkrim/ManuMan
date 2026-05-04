@@ -38,20 +38,11 @@ public class SettingsManager : MonoBehaviour
         }
     }
 
-    private void OnEnable()
-    {
-        SceneManager.sceneLoaded += OnSceneLoaded;
-    }
+    private void OnEnable() => SceneManager.sceneLoaded += OnSceneLoaded;
 
-    private void OnDisable()
-    {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
-    }
+    private void OnDisable() => SceneManager.sceneLoaded -= OnSceneLoaded;
 
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        SettingsMapper.ApplySettings();
-    }
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode) => SettingsMapper.ApplySettings();
 
     private void LoadSettings()
     {
@@ -122,6 +113,71 @@ public class SettingsManager : MonoBehaviour
         _tempSettings.visual.qualityPreset = qp;
 
         if (qp != QualityPreset.Custom) ApplyPresetLogic(qp);
+    }
+
+    private void TryMatchPreset()
+    {
+        foreach (QualityPreset qp in System.Enum.GetValues(typeof(QualityPreset)))
+        {
+            if (qp == QualityPreset.Custom) continue;
+
+            if (MatchesPreset(_tempSettings.visual, qp))
+            {
+                _tempSettings.visual.qualityPreset = qp;
+                _tempSettings.visual.baseQualityPreset = qp;
+                return;
+            }
+        }
+
+        _tempSettings.visual.qualityPreset = QualityPreset.Custom;
+    }
+
+    private bool MatchesPreset(VisualSettings vs, QualityPreset qp)
+    {
+        switch (qp)
+        {
+            case QualityPreset.Potato:
+                return vs.textureMipmap == TextureMipmapPreset.Eighth &&
+                    vs.antiAliasing == AntiAliasingPreset.Off &&
+                    vs.renderScale == RenderScalePreset.Percent075 &&
+                    vs.upscalingFilter == UpscalingFilterPreset.NearestNeighbor &&
+                    vs.shadowQuality == ShadowQualityPreset.Off &&
+                    vs.screenSpaceEffect == ScreenSpaceEffectsPreset.Off;
+
+            case QualityPreset.Low:
+                return vs.textureMipmap == TextureMipmapPreset.Quarter &&
+                    vs.antiAliasing == AntiAliasingPreset.Fxaa &&
+                    vs.renderScale == RenderScalePreset.Percent087 &&
+                    vs.upscalingFilter == UpscalingFilterPreset.Fsr1 &&
+                    vs.shadowQuality == ShadowQualityPreset.Low &&
+                    vs.screenSpaceEffect == ScreenSpaceEffectsPreset.Ssao;
+
+            case QualityPreset.Med:
+                return vs.textureMipmap == TextureMipmapPreset.Half &&
+                    vs.antiAliasing == AntiAliasingPreset.Taa &&
+                    vs.renderScale == RenderScalePreset.Percent100 &&
+                    vs.upscalingFilter == UpscalingFilterPreset.Fsr1 &&
+                    vs.shadowQuality == ShadowQualityPreset.Medium &&
+                    vs.screenSpaceEffect == ScreenSpaceEffectsPreset.SsaoSsgi;
+
+            case QualityPreset.High:
+                return vs.textureMipmap == TextureMipmapPreset.Full &&
+                    vs.antiAliasing == AntiAliasingPreset.Taa &&
+                    vs.renderScale == RenderScalePreset.Percent113 &&
+                    vs.upscalingFilter == UpscalingFilterPreset.Bilinear &&
+                    vs.shadowQuality == ShadowQualityPreset.High &&
+                    vs.screenSpaceEffect == ScreenSpaceEffectsPreset.SsgiSsr;
+
+            case QualityPreset.God:
+                return vs.textureMipmap == TextureMipmapPreset.Full &&
+                    vs.antiAliasing == AntiAliasingPreset.Taa &&
+                    vs.renderScale == RenderScalePreset.Percent125 &&
+                    vs.upscalingFilter == UpscalingFilterPreset.Bilinear &&
+                    vs.shadowQuality == ShadowQualityPreset.High &&
+                    vs.screenSpaceEffect == ScreenSpaceEffectsPreset.Full;
+        }
+
+        return false;
     }
 
     private void ApplyPresetLogic(QualityPreset qp)
@@ -215,7 +271,16 @@ public class SettingsManager : MonoBehaviour
         next = Mathf.Clamp(next, 0, values.Length - 1);
         field = values[next];
 
-        if (typeof(T) != typeof(ResolutionPreset) && typeof(T) != typeof(VSyncPreset)) _tempSettings.visual.qualityPreset = QualityPreset.Custom;
+        if (typeof(T) != typeof(ResolutionPreset) && typeof(T) != typeof(VSyncPreset))
+        {
+            if (_tempSettings.visual.qualityPreset != QualityPreset.Custom)
+            {
+                _tempSettings.visual.baseQualityPreset = _tempSettings.visual.qualityPreset;
+                _tempSettings.visual.qualityPreset = QualityPreset.Custom;
+            }
+        }
+
+        TryMatchPreset();
     }
 
     // Called by OptionManager: when adjusting toggle button in the options menu,
