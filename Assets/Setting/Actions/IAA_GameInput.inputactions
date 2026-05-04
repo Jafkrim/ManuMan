@@ -7,7 +7,7 @@
             "id": "7e058f06-c822-4517-91b0-686ce14b16c3",
             "actions": [
                 {
-                    "name": "Open_Menu",
+                    "name": "OpenMenu",
                     "type": "Button",
                     "id": "5e047a3d-124d-41bd-a2d5-480d64632269",
                     "expectedControlType": "",
@@ -153,7 +153,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Open_Menu",
+                    "action": "OpenMenu",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -175,7 +175,7 @@
             "id": "0db6d68a-8fe0-4c06-b616-76e84f939830",
             "actions": [
                 {
-                    "name": "Close_Menu",
+                    "name": "CloseMenu",
                     "type": "Button",
                     "id": "0b048aac-c712-4e16-8176-917ca193a766",
                     "expectedControlType": "",
@@ -193,18 +193,27 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Menu_Navigate",
-                    "type": "Value",
-                    "id": "9070f720-c43b-42af-810d-37cc17dd2a6a",
-                    "expectedControlType": "Vector2",
+                    "name": "TabSwitch",
+                    "type": "Button",
+                    "id": "a3765419-7b61-45bf-a5f9-8ab0a468b29b",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "NavigateMenu",
+                    "type": "Button",
+                    "id": "07710146-5275-4e2e-b5e3-c81d8280fb95",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
                 },
                 {
-                    "name": "Menu_Switch",
+                    "name": "AdjustValue",
                     "type": "Button",
-                    "id": "a3765419-7b61-45bf-a5f9-8ab0a468b29b",
+                    "id": "0a6be598-aa0b-4cc7-9de7-9bc6a2a528f1",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -219,7 +228,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";ManuMan_PC",
-                    "action": "Close_Menu",
+                    "action": "CloseMenu",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -235,81 +244,103 @@
                     "isPartOfComposite": false
                 },
                 {
-                    "name": "2D Vector",
-                    "id": "563f995c-6850-4610-bc67-adb3f0c57d46",
-                    "path": "2DVector",
+                    "name": "1D Axis",
+                    "id": "6da9608b-2804-4cb4-954f-3e5f7d4de0b2",
+                    "path": "1DAxis",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Menu_Navigate",
+                    "action": "NavigateMenu",
                     "isComposite": true,
                     "isPartOfComposite": false
                 },
                 {
-                    "name": "up",
-                    "id": "6701e5a3-f965-4330-b8a3-cfb0677207b9",
+                    "name": "negative",
+                    "id": "1e0f67eb-89f4-4f25-9f2a-cf61885a5da2",
                     "path": "<Keyboard>/w",
                     "interactions": "",
                     "processors": "",
-                    "groups": ";ManuMan_PC",
-                    "action": "Menu_Navigate",
+                    "groups": "",
+                    "action": "NavigateMenu",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
                 {
-                    "name": "down",
-                    "id": "f2d24011-f454-4a4c-93e5-722e7ac2264c",
+                    "name": "positive",
+                    "id": "3bcc5981-adc7-4dac-a6b3-61140952be78",
                     "path": "<Keyboard>/s",
                     "interactions": "",
                     "processors": "",
-                    "groups": ";ManuMan_PC",
-                    "action": "Menu_Navigate",
+                    "groups": "",
+                    "action": "NavigateMenu",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
                 {
-                    "name": "left",
-                    "id": "14281e10-eed1-4d1e-b40b-14a952e443be",
-                    "path": "<Keyboard>/a",
+                    "name": "1D Axis",
+                    "id": "bd40045a-335c-4a03-8e7d-44c1e25ada97",
+                    "path": "1DAxis",
                     "interactions": "",
                     "processors": "",
-                    "groups": ";ManuMan_PC",
-                    "action": "Menu_Navigate",
-                    "isComposite": false,
-                    "isPartOfComposite": true
+                    "groups": "",
+                    "action": "TabSwitch",
+                    "isComposite": true,
+                    "isPartOfComposite": false
                 },
                 {
-                    "name": "right",
-                    "id": "b20d95ca-f39c-443e-a235-de51c593adfe",
-                    "path": "<Keyboard>/d",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";ManuMan_PC",
-                    "action": "Menu_Navigate",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "",
-                    "id": "e51a4edd-bdd3-4f83-9203-8d8dca6cbbd7",
+                    "name": "negative",
+                    "id": "c69e6cfb-5ca3-4eaa-be86-617f8cfb4473",
                     "path": "<Keyboard>/q",
                     "interactions": "",
                     "processors": "",
-                    "groups": ";ManuMan_PC",
-                    "action": "Menu_Switch",
+                    "groups": "",
+                    "action": "TabSwitch",
                     "isComposite": false,
-                    "isPartOfComposite": false
+                    "isPartOfComposite": true
                 },
                 {
-                    "name": "",
-                    "id": "182b3e3c-860f-4360-a9f4-a4c364eb43bb",
+                    "name": "positive",
+                    "id": "8358ae75-72c2-4421-a687-08bbd503916b",
                     "path": "<Keyboard>/e",
                     "interactions": "",
                     "processors": "",
-                    "groups": ";ManuMan_PC",
-                    "action": "Menu_Switch",
+                    "groups": "",
+                    "action": "TabSwitch",
                     "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "1D Axis",
+                    "id": "4f950688-3220-4a24-b60c-23080112877c",
+                    "path": "1DAxis",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "AdjustValue",
+                    "isComposite": true,
                     "isPartOfComposite": false
+                },
+                {
+                    "name": "negative",
+                    "id": "1a80c635-13a0-4a75-810e-e71f6c783dba",
+                    "path": "<Keyboard>/a",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "AdjustValue",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "positive",
+                    "id": "521a2ac1-7380-4d19-a6dd-00f272cf1e62",
+                    "path": "<Keyboard>/d",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "AdjustValue",
+                    "isComposite": false,
+                    "isPartOfComposite": true
                 }
             ]
         }
