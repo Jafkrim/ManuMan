@@ -14,6 +14,9 @@ public class GameManager : MonoBehaviour
     public bool IsUsingSkill = false;
     public Image skillIcon;
     public float slow = 0.5f;
+
+    public UIManager uiManager;
+
     void Start()
     {
 
@@ -38,7 +41,11 @@ public class GameManager : MonoBehaviour
 
         skillIcon.fillAmount = CurrentSkillDuration / MaxSkillDuration;
 
-        if (Input.GetKeyDown(KeyCode.Space) && !IsUsingSkill)
+        bool canReadSkillInput = uiManager == null || !uiManager.MenuToggledThisFrame;
+
+        if (uiManager != null && uiManager.uiGame.activeSelf == true && canReadSkillInput)
+        {
+            if (Input.GetKeyDown(KeyCode.Space) && !IsUsingSkill)
         {
             IsUsingSkill = true;
             Time.timeScale = slow;
@@ -50,5 +57,6 @@ public class GameManager : MonoBehaviour
             Time.timeScale = 1f;
             Time.fixedDeltaTime = 0.02f * Time.timeScale;
         } 
+        }
     }
 }

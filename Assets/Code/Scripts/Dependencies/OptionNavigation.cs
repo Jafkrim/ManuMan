@@ -34,10 +34,16 @@ public class OptionNavigation : MonoBehaviour
     private InputAction Player_Confirm;
 
     private Coroutine blurRoutine;
+    private Coroutine adjustRepeatRoutine;
     private Color blurColor;
     private int confirmPanelOpenedFrame = -1;
+    private int adjustDirection = 0;
+    public float adjustHoldDelay = 0.35f;
+    public float adjustRepeatRate = 0.08f;
 
     public SettingsManager settingsManager;
+    public SoundManager soundManager;
+    public UIManager pauseManager;
 
     private Dictionary<int, int> tabSelectionMemory = new Dictionary<int, int>();
 
@@ -70,6 +76,7 @@ public class OptionNavigation : MonoBehaviour
     private void OnDisable()
     {
         UnsubscribeInputActions();
+        StopAdjustRepeat();
     }
 
     void Start()
@@ -111,6 +118,9 @@ public class OptionNavigation : MonoBehaviour
         uiOption.SetActive(false);
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+        EventSystem.current.SetSelectedGameObject(uiPause.transform.GetChild(0).GetChild(0).gameObject);
+        pauseManager.buttonIndex = 0;
+        soundManager.PlaySFX(soundManager.ChangePanel);
         if (playerInput != null)
         {
             playerInput.SwitchCurrentActionMap("UI");
@@ -192,6 +202,7 @@ public class OptionNavigation : MonoBehaviour
 
             LoadCurrentIndex();
 
+            soundManager.PlaySFX(soundManager.ChangePanel);
             openPanel();
 
             UnityEngine.Debug.Log("Current Tab Index: " + currentTabIndex);
@@ -215,11 +226,13 @@ public class OptionNavigation : MonoBehaviour
             {
                 if (value > 0)
                     EventSystem.current.SetSelectedGameObject(CancelButton);
+                    soundManager.PlaySFX(soundManager.MoveDown);
             }
             else if (currentSelected == CancelButton)
             {
                 if (value < 0)
                     EventSystem.current.SetSelectedGameObject(ApplyButton);
+                    soundManager.PlaySFX(soundManager.MoveUp);
             }
             else
             {
@@ -239,10 +252,12 @@ public class OptionNavigation : MonoBehaviour
             if (value > 0)
             {
                 currentSelectionIndex = Mathf.Min(currentSelectionIndex + 1, panel.childCount - 1);
+                soundManager.PlaySFX(soundManager.MoveDown);
             }
             else if (value < 0)
             {
                 currentSelectionIndex = Mathf.Max(currentSelectionIndex - 1, 0);
+                soundManager.PlaySFX(soundManager.MoveUp);
             }
 
             SelectCurrentOption();
@@ -251,28 +266,31 @@ public class OptionNavigation : MonoBehaviour
 
     private void OnAdjustValue(InputAction.CallbackContext ctx)
     {
-        if (!ctx.performed || !uiOption.activeSelf) return;
+        if (!uiOption.activeSelf) return;
+        if (ConfirmPanel != null && ConfirmPanel.activeSelf) return;
 
         ResolveSettingsManager();
         if (settingsManager == null || settingsManager.tempSettings == null) return;
+
+        if (ctx.canceled)
+        {
+            StopAdjustRepeat();
+            return;
+        }
+
+        if (!ctx.started) return;
 
         var value = ctx.ReadValue<float>();
         int direction = value > 0 ? 1 : value < 0 ? -1 : 0;
         if (direction == 0) return;
 
-        switch (currentTabIndex)
+        ApplyAdjust(direction);
+
+        if (currentTabIndex == TabAudio)
         {
-            case TabAudio:
-                AdjustAudioSettings(direction);
-                break;
-            case TabGraphics:
-                AdjustGraphicsSettings(direction);
-                break;
-            case TabKeybinds:
-                settingsManager.AdjustKeybind();
-                break;
-            case TabCredits:
-                break;
+            adjustDirection = direction;
+            if (adjustRepeatRoutine == null)
+                adjustRepeatRoutine = StartCoroutine(RepeatAdjust());
         }
     }
 
@@ -304,7 +322,7 @@ public class OptionNavigation : MonoBehaviour
         else if (EventSystem.current.currentSelectedGameObject == CancelButton)
         {
             ConfirmPanel.SetActive(false);
-            SyncCurrentTabUI();
+            SyncAllTabsUI();
         }
     }
 
@@ -333,7 +351,10 @@ public class OptionNavigation : MonoBehaviour
         if (NavigateMenuAction != null)
             NavigateMenuAction.performed += OnNavigateMenu;
         if (AdjustValueAction != null)
-            AdjustValueAction.performed += OnAdjustValue;
+        {
+            AdjustValueAction.started += OnAdjustValue;
+            AdjustValueAction.canceled += OnAdjustValue;
+        }
         if (Player_Confirm != null)
             Player_Confirm.performed += onPlayer_Confirm;
     }
@@ -349,7 +370,10 @@ public class OptionNavigation : MonoBehaviour
         if (NavigateMenuAction != null)
             NavigateMenuAction.performed -= OnNavigateMenu;
         if (AdjustValueAction != null)
-            AdjustValueAction.performed -= OnAdjustValue;
+        {
+            AdjustValueAction.started -= OnAdjustValue;
+            AdjustValueAction.canceled -= OnAdjustValue;
+        }
         if (Player_Confirm != null)
             Player_Confirm.performed -= onPlayer_Confirm;
 
@@ -358,6 +382,53 @@ public class OptionNavigation : MonoBehaviour
         NavigateMenuAction = null;
         AdjustValueAction = null;
         Player_Confirm = null;
+    }
+
+    private void StopAdjustRepeat()
+    {
+        adjustDirection = 0;
+        if (adjustRepeatRoutine != null)
+        {
+            StopCoroutine(adjustRepeatRoutine);
+            adjustRepeatRoutine = null;
+        }
+    }
+
+    private IEnumerator RepeatAdjust()
+    {
+        float elapsed = 0f;
+        while (elapsed < adjustHoldDelay)
+        {
+            if (!uiOption.activeSelf || adjustDirection == 0) yield break;
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        while (uiOption.activeSelf && adjustDirection != 0)
+        {
+            ApplyAdjust(adjustDirection);
+            yield return new WaitForSecondsRealtime(adjustRepeatRate);
+        }
+
+        adjustRepeatRoutine = null;
+    }
+
+    private void ApplyAdjust(int direction)
+    {
+        switch (currentTabIndex)
+        {
+            case TabAudio:
+                AdjustAudioSettings(direction);
+                break;
+            case TabGraphics:
+                AdjustGraphicsSettings(direction);
+                break;
+            case TabKeybinds:
+                settingsManager.AdjustKeybind();
+                break;
+            case TabCredits:
+                break;
+        }
     }
 
     private void openPanel()
@@ -405,6 +476,12 @@ public class OptionNavigation : MonoBehaviour
             case TabCredits:
                 break;
         }
+    }
+
+    public void SyncAllTabsUI()
+    {
+        SyncAudioTabUI();
+        SyncGraphicsTabUI();
     }
 
     private Transform GetOptionRoot()

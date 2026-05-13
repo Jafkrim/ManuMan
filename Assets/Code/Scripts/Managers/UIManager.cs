@@ -20,6 +20,7 @@ public class UIManager : MonoBehaviour
     public TextMeshProUGUI text;
 
     public PlayerInput playerInput;
+    public int buttonIndex = 0;
 
     private InputAction openMenuAction;
     private InputAction closeMenuAction;
@@ -28,6 +29,12 @@ public class UIManager : MonoBehaviour
     private Coroutine blurRoutine;
     private Color blurColor;
 
+    public bool MenuToggledThisFrame
+    {
+        get { return lastMenuToggleFrame == Time.frameCount; }
+    }
+
+    public SoundManager soundManager;
 
     private void Awake()
     {
@@ -148,6 +155,7 @@ public class UIManager : MonoBehaviour
             if (blurRoutine != null)
                 StopCoroutine(blurRoutine);
 
+            SoundManager.Instance.PlaySFX(SoundManager.Instance.ChangePanel);
             blurRoutine = StartCoroutine(FadeBlur(1f, 0.2f));
         }
         else if(uiPause.activeSelf)
@@ -190,6 +198,7 @@ public class UIManager : MonoBehaviour
         if (blurRoutine != null)
             StopCoroutine(blurRoutine);
 
+        SoundManager.Instance.PlaySFX(SoundManager.Instance.ChangePanel);
         blurRoutine = StartCoroutine(FadeBlur(1f, 0.2f));
     }
 
@@ -220,11 +229,12 @@ public class UIManager : MonoBehaviour
         }
         GameObject AudioPanel = OptionPanel.GetChild(4).gameObject;
         AudioPanel.SetActive(true);
-        GameObject firstOption = AudioPanel.transform.GetChild(0).gameObject;
-        ExecuteEvents.Execute<IPointerEnterHandler>(firstOption, new PointerEventData(EventSystem.current), ExecuteEvents.pointerEnterHandler);
+        GameObject firstOption = AudioPanel.transform.GetChild(0).GetChild(0).gameObject;
+        EventSystem.current.SetSelectedGameObject(firstOption);
 
         GameObject ConfirmPanel = uiOption.transform.GetChild(1).gameObject;
         ConfirmPanel.SetActive(false);
+        SoundManager.Instance.PlaySFX(SoundManager.Instance.ChangePanel);
     }
 
     public void OnOpenMenu(InputAction.CallbackContext ctx)
@@ -244,7 +254,6 @@ public class UIManager : MonoBehaviour
         TogglePauseMenu();
     }
     
-    private int buttonIndex = 0;
     public void OnNavigateMenu(InputAction.CallbackContext ctx)
     {
         if (!ctx.performed) return;
@@ -258,10 +267,12 @@ public class UIManager : MonoBehaviour
             if (value > 0)
             {
                 buttonIndex = Mathf.Min(buttonIndex + 1, maxIndex);
+                soundManager.PlaySFX(soundManager.MoveDown);
             }
             else if (value < 0)
             {
                 buttonIndex = Mathf.Max(buttonIndex - 1, 0);
+                soundManager.PlaySFX(soundManager.MoveUp);
             }
 
             switch (buttonIndex)
