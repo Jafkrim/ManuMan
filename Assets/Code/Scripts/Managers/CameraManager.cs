@@ -10,7 +10,7 @@ public class CameraManager : MonoBehaviour
     {
         if (!target) return;
 
-        Debug.Log(target.position.y);
+        // Debug.Log(target.position.y);
 
         transform.position = target.position + offset;
         transform.rotation = Quaternion.Euler(fixedEuler);
