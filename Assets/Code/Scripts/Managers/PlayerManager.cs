@@ -3,6 +3,20 @@ using UnityEngine;
 
 public class PlayerManager : MonoBehaviour
 {
+    #region INPUT
+
+    private const KeyCode LeftHandKey = KeyCode.A;
+    private const KeyCode RightHandKey = KeyCode.F;
+    private const KeyCode LeftFootKey = KeyCode.S;
+    private const KeyCode RightFootKey = KeyCode.D;
+
+    private const int LimbMoveMouseButton = 0;
+
+    private const string MouseXAxis = "Mouse X";
+    private const string MouseYAxis = "Mouse Y";
+
+    #endregion
+
     [SerializeField] private MovementState _movementState;
     [SerializeField] private ActionState _actionState;
 
@@ -18,6 +32,8 @@ public class PlayerManager : MonoBehaviour
     public ActionState actionState => _actionState;
     public PlayerPhysics.LimbType? ActiveLimb => _activeLimb;
 
+    #region UNITY
+
     private void Update()
     {
         TickConditions();
@@ -26,33 +42,40 @@ public class PlayerManager : MonoBehaviour
         HandleLimbMovement();
     }
 
-    // ---------------- INPUT ----------------
+    #endregion
+
+    #region INPUT HANDLING
 
     private void HandleLimbSelection()
     {
-        if (Input.GetKeyDown(KeyCode.A))
+        if (Input.GetKeyDown(LeftHandKey))
             _activeLimb = PlayerPhysics.LimbType.LeftHand;
 
-        else if (Input.GetKeyDown(KeyCode.F))
+        else if (Input.GetKeyDown(RightHandKey))
             _activeLimb = PlayerPhysics.LimbType.RightHand;
 
-        else if (Input.GetKeyDown(KeyCode.S))
+        else if (Input.GetKeyDown(LeftFootKey))
             _activeLimb = PlayerPhysics.LimbType.LeftFoot;
 
-        else if (Input.GetKeyDown(KeyCode.D))
+        else if (Input.GetKeyDown(RightFootKey))
             _activeLimb = PlayerPhysics.LimbType.RightFoot;
     }
 
     private void HandleLimbMovement()
     {
         if (_activeLimb == null) return;
-        if (!Input.GetMouseButton(0)) return; // LMB required
-        if (!CanMove()) return;
+
+        if (!Input.GetMouseButton(LimbMoveMouseButton))
+            return;
+
+        if (!CanMove())
+            return;
 
         Vector2 mouseDelta = GetMouseDelta();
 
-        // small deadzone to avoid jitter
-        if (mouseDelta.sqrMagnitude < 0.0001f) return;
+        // Deadzone
+        if (mouseDelta.sqrMagnitude < 0.0001f)
+            return;
 
         MoveLimb(_activeLimb.Value, mouseDelta);
     }
@@ -60,14 +83,19 @@ public class PlayerManager : MonoBehaviour
     private Vector2 GetMouseDelta()
     {
         return new Vector2(
-            Input.GetAxis("Mouse X"),
-            Input.GetAxis("Mouse Y")
+            Input.GetAxis(MouseXAxis),
+            Input.GetAxis(MouseYAxis)
         );
     }
 
-    // ---------------- CORE CONTROL ----------------
+    #endregion
 
-    public void MoveLimb(PlayerPhysics.LimbType limb, Vector2 input)
+    #region CORE CONTROL
+
+    public void MoveLimb(
+        PlayerPhysics.LimbType limb,
+        Vector2 input
+    )
     {
         _physics.SetLimbInput(limb, input);
     }
@@ -75,18 +103,29 @@ public class PlayerManager : MonoBehaviour
     public void TryInteract(Transform cam)
     {
         if (!CanAct()) return;
+
         _interaction.TryInteract(this, cam);
     }
 
-    // ---------------- STATE ----------------
+    #endregion
 
-    public void SetMovementState(MovementState state) => _movementState = state;
-    public void SetActionState(ActionState state) => _actionState = state;
+    #region STATE
 
-    public bool CanMove() => _movementState != MovementState.Falling;
-    public bool CanAct() => _actionState != ActionState.Locked;
+    public void SetMovementState(MovementState state)
+        => _movementState = state;
 
-    // ---------------- CONDITIONS ----------------
+    public void SetActionState(ActionState state)
+        => _actionState = state;
+
+    public bool CanMove()
+        => _movementState != MovementState.Falling;
+
+    public bool CanAct()
+        => _actionState != ActionState.Locked;
+
+    #endregion
+
+    #region CONDITIONS
 
     private void TickConditions()
     {
@@ -99,22 +138,39 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
-    public void AddCondition(ConditionType type, float duration, float intensity)
+    public void AddCondition(
+        ConditionType type,
+        float duration,
+        float intensity
+    )
     {
         for (int i = 0; i < _conditions.Count; i++)
         {
             if (_conditions[i].type == type)
             {
-                _conditions[i].duration = Mathf.Max(_conditions[i].duration, duration);
+                _conditions[i].duration = Mathf.Max(
+                    _conditions[i].duration,
+                    duration
+                );
+
                 _conditions[i].intensity = intensity;
+
                 return;
             }
         }
 
-        _conditions.Add(new ConditionEffect(type, duration, intensity));
+        _conditions.Add(
+            new ConditionEffect(
+                type,
+                duration,
+                intensity
+            )
+        );
     }
 
-    // ---------------- ENUMS ----------------
+    #endregion
+
+    #region ENUMS
 
     public enum MovementState
     {
@@ -140,17 +196,27 @@ public class PlayerManager : MonoBehaviour
         CameraShake
     }
 
+    #endregion
+
+    #region INTERNAL
+
     private class ConditionEffect
     {
         public ConditionType type;
         public float duration;
         public float intensity;
 
-        public ConditionEffect(ConditionType t, float d, float i)
+        public ConditionEffect(
+            ConditionType t,
+            float d,
+            float i
+        )
         {
             type = t;
             duration = d;
             intensity = i;
         }
     }
+
+    #endregion
 }
