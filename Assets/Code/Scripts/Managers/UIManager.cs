@@ -137,6 +137,10 @@ public class UIManager : MonoBehaviour
 
         if (uiGame.activeSelf)
         {
+
+            // pause the score system
+            Time.timeScale = 0f;
+
             uiGame.SetActive(false);
             uiPause.SetActive(true);
             Cursor.lockState = CursorLockMode.None;
@@ -152,6 +156,9 @@ public class UIManager : MonoBehaviour
         }
         else if(uiPause.activeSelf)
         {
+            // Resume the score system
+            Time.timeScale = 1f;
+
             uiGame.SetActive(true);
             uiPause.SetActive(false);
             uiOption.SetActive(false);
