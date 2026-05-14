@@ -5,6 +5,7 @@ public class PlayerManager : MonoBehaviour
 {
     #region INPUT
 
+    private const KeyCode RecoverKey = KeyCode.Space;
     private const KeyCode LeftHandKey = KeyCode.A;
     private const KeyCode RightHandKey = KeyCode.F;
     private const KeyCode LeftFootKey = KeyCode.S;
@@ -40,44 +41,78 @@ public class PlayerManager : MonoBehaviour
 
         HandleLimbSelection();
         HandleLimbMovement();
+        HandleRecovery();
     }
 
     #endregion
 
     #region INPUT HANDLING
 
+    private void HandleRecovery()
+    {
+        if (!Input.GetKeyDown(RecoverKey))
+            return;
+
+        if (_movementState != MovementState.Falling)
+            return;
+
+        _physics.RecoverToGrounded();
+    }
+
     private void HandleLimbSelection()
     {
-        if (Input.GetKeyDown(LeftHandKey))
+        _activeLimb = null;
+
+        if (Input.GetKey(LeftHandKey))
             _activeLimb = PlayerPhysics.LimbType.LeftHand;
 
-        else if (Input.GetKeyDown(RightHandKey))
+        else if (Input.GetKey(RightHandKey))
             _activeLimb = PlayerPhysics.LimbType.RightHand;
 
-        else if (Input.GetKeyDown(LeftFootKey))
+        else if (Input.GetKey(LeftFootKey))
             _activeLimb = PlayerPhysics.LimbType.LeftFoot;
 
-        else if (Input.GetKeyDown(RightFootKey))
+        else if (Input.GetKey(RightFootKey))
             _activeLimb = PlayerPhysics.LimbType.RightFoot;
     }
 
     private void HandleLimbMovement()
     {
-        if (_activeLimb == null) return;
+        _physics.ResetInputs();
 
-        if (!Input.GetMouseButton(LimbMoveMouseButton))
+        bool holdingLmb =
+            Input.GetMouseButton(
+                LimbMoveMouseButton
+            );
+
+        if (!holdingLmb)
             return;
 
         if (!CanMove())
             return;
 
-        Vector2 mouseDelta = GetMouseDelta();
+        Vector2 mouseDelta =
+            GetMouseDelta();
+
+        // BODY ROTATION MODE
+        if (_activeLimb == null)
+        {
+            _physics.RotateBody(
+                mouseDelta.x
+            );
+
+            return;
+        }
 
         // Deadzone
         if (mouseDelta.sqrMagnitude < 0.0001f)
             return;
 
-        MoveLimb(_activeLimb.Value, mouseDelta);
+        // LIMB CONTROL MODE
+        MoveLimb(
+            _activeLimb.Value,
+            mouseDelta
+        );
     }
 
     private Vector2 GetMouseDelta()
@@ -118,7 +153,7 @@ public class PlayerManager : MonoBehaviour
         => _actionState = state;
 
     public bool CanMove()
-        => _movementState != MovementState.Falling;
+        => true;
 
     public bool CanAct()
         => _actionState != ActionState.Locked;
