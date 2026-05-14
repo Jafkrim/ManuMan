@@ -66,6 +66,7 @@ public class CameraManager : MonoBehaviour
     private void LateUpdate()
     {
         if (!target) return;
+        if (Time.timeScale == 0f) return;
 
         HandleRotation();
         HandleZoom();

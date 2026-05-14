@@ -2,12 +2,30 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using TMPro;
+using System;
+using System.IO; // json
+using UnityEngine.InputSystem;
 
 public class GameManager : MonoBehaviour
 {
+    [Header("Score System")]
+    public float currentTime = 0f;
+    public TextMeshProUGUI scoreText;
+    
+    [Header("Highest Score System")]
+    public float highestTime = 0f;
+    public TextMeshProUGUI highestScoreText;
+    
+    public string mainSceneName = "_testUI";
+    private bool isGameFinished = false;
+
+    // path for json file
+    private string saveFilePath;
 
     public int MaxHealth = 100;
-    public int CurrentHealth = 70;
+    public int CurrentHealth = 100;
     public Slider healthBar;
     public  float MaxSkillDuration = 4f;
     public float CurrentSkillDuration = 0f;
@@ -19,7 +37,10 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-
+        
+        // get path
+        saveFilePath = Application.persistentDataPath + "/savefile.json";
+        LoadBestScore();
     }
 
     void Update()
@@ -39,24 +60,104 @@ public class GameManager : MonoBehaviour
             CurrentSkillDuration -= Time.deltaTime * 0.5f;
         }
 
+        if (SceneManager.GetActiveScene().name == mainSceneName && Time.timeScale > 0f && !isGameFinished)
+        {
+            currentTime += Time.deltaTime;
+            UpdateScoreUI(currentTime, scoreText);
+        }
+
+        // keybind logic
+        if (Keyboard.current != null && Keyboard.current.ctrlKey.isPressed && Keyboard.current.sKey.wasPressedThisFrame)
+        {
+            FinishGame();
+        }
         skillIcon.fillAmount = CurrentSkillDuration / MaxSkillDuration;
 
-        bool canReadSkillInput = uiManager == null || !uiManager.MenuToggledThisFrame;
+    }
 
-        if (uiManager != null && uiManager.uiGame.activeSelf == true && canReadSkillInput)
+    private void UpdateScoreUI(float timeToDisplay, TextMeshProUGUI textElement)
+    {
+        if (textElement == null) return;
+
+        // format time
+        TimeSpan time = TimeSpan.FromSeconds(timeToDisplay);
+        textElement.text = time.ToString(@"mm\:ss\.ff");
+    }
+
+    public void FinishGame()
+    {
+        
+        if (isGameFinished) return; // prevent double click
+        isGameFinished = true;
+
+        // check best time
+        if (highestTime == 0f || currentTime < highestTime)
         {
-            if (Input.GetKeyDown(KeyCode.Space) && !IsUsingSkill)
+            highestTime = currentTime;
+            SaveBestScore();
+            UpdateScoreUI(highestTime, highestScoreText);
+            Debug.Log("New Best Time Saved: " + highestTime);
+        }
+        else
         {
-            IsUsingSkill = true;
-            Time.timeScale = slow;
-            Time.fixedDeltaTime = 0.02f * Time.timeScale;
-        } 
-        else if (Input.GetKeyDown(KeyCode.Space) && IsUsingSkill)
-        {
-            IsUsingSkill = false;
-            Time.timeScale = 1f;
-            Time.fixedDeltaTime = 0.02f * Time.timeScale;
-        } 
+            Debug.Log("Finished! But didn't beat the best time.");
         }
     }
+
+    private void SaveBestScore()
+    {
+        SaveData data = new SaveData();
+        data.highestTime = highestTime;
+
+        // save to json
+        string json = JsonUtility.ToJson(data);
+        File.WriteAllText(saveFilePath, json);
+    }
+
+    private void LoadBestScore()
+    {
+        if (File.Exists(saveFilePath))
+        {
+            // read json
+            string json = File.ReadAllText(saveFilePath);
+            SaveData data = JsonUtility.FromJson<SaveData>(json);
+            
+            highestTime = data.highestTime;
+            UpdateScoreUI(highestTime, highestScoreText);
+        }
+        else
+        {
+            // no score yet
+            if (highestScoreText != null) highestScoreText.text = "--:--.--";
+        }
+    }
+
+
+    public void SlowDownTime()
+    {
+        bool canReadSkillInput = uiManager == null || !uiManager.MenuToggledThisFrame;
+        if (uiManager != null && uiManager.uiGame.activeSelf == true && canReadSkillInput)
+        {
+            if (!IsUsingSkill)
+            {
+                IsUsingSkill = true;
+                Time.timeScale = slow;
+                Time.fixedDeltaTime = 0.02f * Time.timeScale;
+            } 
+            else if (IsUsingSkill)
+            {
+                IsUsingSkill = false;
+                Time.timeScale = 1f;
+                Time.fixedDeltaTime = 0.02f * Time.timeScale;
+            } 
+        }
+    }
+
+    
+}
+
+[System.Serializable]
+public class SaveData
+{
+    public float highestTime;
 }
