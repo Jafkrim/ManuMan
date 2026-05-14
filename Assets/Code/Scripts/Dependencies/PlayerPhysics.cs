@@ -67,10 +67,10 @@ public class PlayerPhysics : MonoBehaviour
 
     [Header("Fall Detection")]
     [SerializeField]
-    private float _fallAngle = 20f;
+    private float _fallAngle = 30f;
 
     [SerializeField]
-    private float _recoverAngle = 15;
+    private float _recoverAngle = 25;
 
     [Header("Body Drive")]
     [SerializeField] private float _bodySpring = 1500f;
