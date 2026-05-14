@@ -56,7 +56,6 @@ public class PlayerPhysics : MonoBehaviour
     [SerializeField] private float _activeLimbDamper = 8f;
     [SerializeField] private float _activeLimbForce = 1500f;
 
-    [SerializeField] private float _rotationAngle = 70f;
     [SerializeField] private float _movementForce = 25f;
 
     [Header("Body Rotation")]
@@ -103,6 +102,21 @@ public class PlayerPhysics : MonoBehaviour
     private Vector2 _rh;
     private Vector2 _lf;
     private Vector2 _rf;
+
+    private float _leftHipPose;
+    private float _rightHipPose;
+
+    private float _leftKneePose;
+    private float _rightKneePose;
+
+    private float _leftUpperArmPoseX;
+    private float _rightUpperArmPoseX;
+
+    private float _leftArmPoseX;
+    private float _rightArmPoseX;
+
+    private float _leftUpperArmPoseZ;
+    private float _rightUpperArmPoseZ;
 
     private JointDrive _limbDrive;
     private JointDrive _activeLimbDrive;
@@ -392,33 +406,47 @@ public class PlayerPhysics : MonoBehaviour
             : CreateZeroDrive()
         );
 
-        ApplyBalance(
+        ApplyJointDriveOnly(
             _leftHipsJoint,
             grounded
             ? _hipsDrive
             : CreateZeroDrive()
         );
 
-        ApplyBalance(
+        ApplyJointDriveOnly(
             _rightHipsJoint,
             grounded
             ? _hipsDrive
             : CreateZeroDrive()
         );
 
-        ApplyBalance(
+        ApplyJointDriveOnly(
             _leftKneeJoint,
             grounded
             ? _kneeDrive
             : CreateZeroDrive()
         );
 
-        ApplyBalance(
+        ApplyJointDriveOnly(
             _rightKneeJoint,
             grounded
             ? _kneeDrive
             : CreateZeroDrive()
         );
+    }
+
+    private void ApplyJointDriveOnly(
+        ConfigurableJoint joint,
+        JointDrive drive
+    )
+    {
+        if (!joint)
+            return;
+
+        joint.rotationDriveMode =
+            RotationDriveMode.Slerp;
+
+        joint.slerpDrive = drive;
     }
 
     private void ApplyBalance(
@@ -470,7 +498,7 @@ public class PlayerPhysics : MonoBehaviour
         input =
             Vector2.ClampMagnitude(
                 input,
-                1f
+                5f
             );
 
         switch (limb)
@@ -493,100 +521,175 @@ public class PlayerPhysics : MonoBehaviour
         }
     }
 
-    public void ResetInputs()
-    {
-        _lh = Vector2.zero;
-        _rh = Vector2.zero;
-
-        _lf = Vector2.zero;
-        _rf = Vector2.zero;
-    }
-
     #endregion
 
     #region LIMB CONTROL
 
-    private void ApplyLimb(
-        ConfigurableJoint joint,
-        Rigidbody rb,
-        Vector2 input,
-        bool invert,
-        PlayerManager.MovementState state
-    )
+private void ApplyLimb(ConfigurableJoint joint, Rigidbody rb, Vector2 input, bool invert, PlayerManager.MovementState state)
+{
+    if (!joint) return;
+
+    bool active = input.sqrMagnitude > 0.0001f;
+    JointDrive drive = active ? _activeLimbDrive : _limbDrive;
+
+    joint.rotationDriveMode = RotationDriveMode.XYAndZ;
+    joint.angularXDrive = drive;
+    joint.angularYZDrive = drive;
+
+    float dragMultiplier = 15f;
+    float horizontal = Mathf.Clamp(input.x * dragMultiplier, -5f, 5f);
+    float vertical = Mathf.Clamp(input.y * dragMultiplier, -5f, 5f);
+
+    if (invert) horizontal *= -1f;
+
+    // Separate configuration variables for independent speed control
+    float armPoseSpeed = 256f;
+    float legPoseSpeed = 4f;
+
+    // ARMS
+// ARMS
+if (rb == _leftHand || rb == _rightHand)
+{
+    if (rb == _leftHand)
     {
-        if (!joint)
-            return;
+        // RIGHT SLIDE => LEFT ARM GO BACK
+        _leftUpperArmPoseZ += -horizontal * armPoseSpeed;
+        _leftArmPoseX -= vertical * armPoseSpeed;
 
-        bool active =
-            input.sqrMagnitude > 0.0001f;
+        _leftUpperArmPoseZ = Mathf.Clamp(_leftUpperArmPoseZ, -90f, 90f);
+        _leftArmPoseX = Mathf.Clamp(_leftArmPoseX, -5f, 120f);
 
-        JointDrive drive =
-            active
-            ? _activeLimbDrive
-            : _limbDrive;
+        _leftUpperArmJoint.targetRotation =
+            Quaternion.Euler(0f, 0f, -_leftUpperArmPoseZ);
 
-        joint.rotationDriveMode =
-            RotationDriveMode.XYAndZ;
-
-        joint.angularXDrive =
-            drive;
-
-        joint.angularYZDrive =
-            drive;
-
-        float horizontal =
-            Mathf.Clamp(
-                input.x,
-                -1f,
-                1f
-            );
-
-        float vertical =
-            Mathf.Clamp(
-                input.y,
-                -1f,
-                1f
-            );
-
-        if (invert)
-            horizontal *= -1f;
-
-        Quaternion targetRotation;
-
-        if (
-            rb == _leftHand ||
-            rb == _rightHand
-        )
-        {
-            targetRotation =
-                Quaternion.Euler(
-                    0f,
-                    horizontal *
-                    _rotationAngle,
-                    -vertical *
-                    _rotationAngle
-                );
-        }
-        else
-        {
-            targetRotation =
-                Quaternion.Euler(
-                    -vertical *
-                    _rotationAngle,
-                    horizontal *
-                    _rotationAngle,
-                    0f
-                );
-        }
-
-        joint.targetRotation =
-            targetRotation;
-
-        ApplyMovementForce(
-            rb,
-            input
-        );
+        _leftArmJoint.targetRotation =
+            Quaternion.Euler(0f, 0f, -_leftArmPoseX);
     }
+    else if (rb == _rightHand)
+    {
+        // RIGHT SLIDE => RIGHT ARM GO FORWARD
+        _rightUpperArmPoseZ += horizontal * armPoseSpeed;
+        _rightArmPoseX -= vertical * armPoseSpeed;
+
+        _rightUpperArmPoseZ = Mathf.Clamp(_rightUpperArmPoseZ, -90f, 90f);
+        _rightArmPoseX = Mathf.Clamp(_rightArmPoseX, -5f, 120f);
+
+        _rightUpperArmJoint.targetRotation =
+            Quaternion.Euler(0f, 0f, _rightUpperArmPoseZ);
+
+        _rightArmJoint.targetRotation =
+            Quaternion.Euler(0f, 0f, _rightArmPoseX);
+    }
+}
+    // LEGS
+    else
+    {
+        if (rb == _leftFoot)
+        {
+            _leftHipPose += horizontal * legPoseSpeed;
+            _leftKneePose += vertical * legPoseSpeed;
+
+            _leftHipPose = Mathf.Clamp(_leftHipPose, -70f, 70f);
+            _leftKneePose = Mathf.Clamp(_leftKneePose, -120f, 5f);
+
+            _leftHipsJoint.targetRotation = Quaternion.Euler(-_leftHipPose, 0f, 0f);
+            _leftKneeJoint.targetRotation = Quaternion.Euler(_leftKneePose, 0f, 0f);
+        }
+        else if (rb == _rightFoot)
+        {
+            _rightHipPose += horizontal * legPoseSpeed;
+            _rightKneePose += vertical * legPoseSpeed;
+
+            _rightHipPose = Mathf.Clamp(_rightHipPose, -70f, 70f);
+            _rightKneePose = Mathf.Clamp(_rightKneePose, -120f, 5f);
+
+            _rightHipsJoint.targetRotation = Quaternion.Euler(_rightHipPose, 0f, 0f);
+            _rightKneeJoint.targetRotation = Quaternion.Euler(_rightKneePose, 0f, 0f);
+        }
+
+        ApplyMovementForce(rb, new Vector2(horizontal, 0f));
+    }
+}
+
+public void ResetInputs()
+{
+    _lh = Vector2.zero;
+    _rh = Vector2.zero;
+
+    _lf = Vector2.zero;
+    _rf = Vector2.zero;
+
+    // return poses slowly
+    _leftHipPose =
+        Mathf.Lerp(
+            _leftHipPose,
+            0f,
+            Time.deltaTime * 8f
+        );
+
+    _rightHipPose =
+        Mathf.Lerp(
+            _rightHipPose,
+            0f,
+            Time.deltaTime * 8f
+        );
+
+    _leftKneePose =
+        Mathf.Lerp(
+            _leftKneePose,
+            0f,
+            Time.deltaTime * 8f
+        );
+
+    _rightKneePose =
+        Mathf.Lerp(
+            _rightKneePose,
+            0f,
+            Time.deltaTime * 8f
+        );
+
+_leftUpperArmPoseX =
+    Mathf.Lerp(
+        _leftUpperArmPoseX,
+        0f,
+        Time.deltaTime * 8f
+    );
+
+_rightUpperArmPoseX =
+    Mathf.Lerp(
+        _rightUpperArmPoseX,
+        0f,
+        Time.deltaTime * 8f
+    );
+
+_leftUpperArmPoseZ =
+    Mathf.Lerp(
+        _leftUpperArmPoseZ,
+        0f,
+        Time.deltaTime * 8f
+    );
+
+_rightUpperArmPoseZ =
+    Mathf.Lerp(
+        _rightUpperArmPoseZ,
+        0f,
+        Time.deltaTime * 8f
+    );
+
+_leftArmPoseX =
+    Mathf.Lerp(
+        _leftArmPoseX,
+        0f,
+        Time.deltaTime * 8f
+    );
+
+_rightArmPoseX =
+    Mathf.Lerp(
+        _rightArmPoseX,
+        0f,
+        Time.deltaTime * 8f
+    );
+}
 
     private void ApplyMovementForce(
         Rigidbody rb,
