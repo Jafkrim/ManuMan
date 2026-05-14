@@ -34,10 +34,16 @@ public class OptionNavigation : MonoBehaviour
     private InputAction Player_Confirm;
 
     private Coroutine blurRoutine;
+    private Coroutine adjustRepeatRoutine;
     private Color blurColor;
     private int confirmPanelOpenedFrame = -1;
+    private int adjustDirection = 0;
+    public float adjustHoldDelay = 0.35f;
+    public float adjustRepeatRate = 0.08f;
 
     public SettingsManager settingsManager;
+    public SoundManager soundManager;
+    public UIManager pauseManager;
 
     private Dictionary<int, int> tabSelectionMemory = new Dictionary<int, int>();
 
@@ -70,14 +76,12 @@ public class OptionNavigation : MonoBehaviour
     private void OnDisable()
     {
         UnsubscribeInputActions();
+        StopAdjustRepeat();
     }
 
     void Start()
     {
-        if (uiGameBlur != null)
-        {
-            blurColor = uiGameBlur.color;
-        }
+        blurColor = uiGameBlur.color;
     }
 
     private IEnumerator FadeBlur(float targetAlpha, float duration)
@@ -111,12 +115,12 @@ public class OptionNavigation : MonoBehaviour
         uiOption.SetActive(false);
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-        if (playerInput != null)
-        {
-            playerInput.SwitchCurrentActionMap("UI");
-            UnityEngine.Debug.Log("Current Action Map: " + playerInput.currentActionMap.name);
-        }
-        
+        EventSystem.current.SetSelectedGameObject(uiPause.transform.GetChild(0).GetChild(0).gameObject);
+        pauseManager.buttonIndex = 0;
+        soundManager.PlaySFX(soundManager.ChangePanel);
+        playerInput.SwitchCurrentActionMap("UI");
+        UnityEngine.Debug.Log("Current Action Map: " + playerInput.currentActionMap.name);
+
         if (blurRoutine != null)
             StopCoroutine(blurRoutine);
 
@@ -125,22 +129,12 @@ public class OptionNavigation : MonoBehaviour
 
     private void ResolvePlayerInput()
     {
-        if (playerInput != null) return;
-
-        playerInput = GetComponent<PlayerInput>();
-        if (playerInput != null) return;
-
         playerInput = FindObjectOfType<PlayerInput>();
     }
 
     private void ResolveSettingsManager()
     {
-        if (settingsManager != null) return;
-
         settingsManager = SettingsManager.Instance;
-        if (settingsManager != null) return;
-
-        settingsManager = FindObjectOfType<SettingsManager>();
     }
 
     public int currentTabIndex = 0;
@@ -148,29 +142,24 @@ public class OptionNavigation : MonoBehaviour
 
     private void OnCloseMenu(InputAction.CallbackContext ctx)
     {
-        if (!ctx.performed || !uiOption.activeSelf) return;
-
         ResolveSettingsManager();
 
-        if (ConfirmPanel != null && settingsManager != null && settingsManager.HasUnsavedChanges())
+        if (settingsManager.HasUnsavedChanges())
         {
-            TryOpenConfirmPanel();
+            OpenConfirmPanel();
             return;
         }
-
-        BackToPauseMenu();
+        if (uiOption.activeSelf)
+        {
+            BackToPauseMenu();
+        }
     }
 
     private void OnTabSwitch(InputAction.CallbackContext ctx)
     {
-        if (!ctx.performed || !uiOption.activeSelf) return;
-
         var value = ctx.ReadValue<float>();
-        if (Mathf.Approximately(value, 0f)) return;
 
         // UnityEngine.Debug.Log("Tab Switch Input Value: " + value);
-        var optionRoot = GetOptionRoot();
-        if (optionRoot == null) return;
 
         GameObject buttonTab = GetTabButton(currentTabIndex);
         GameObject panelButton = GetCurrentOption();
@@ -179,6 +168,7 @@ public class OptionNavigation : MonoBehaviour
 
         if (uiOption.activeSelf)
         {
+            SyncTempSettingsFromCurrent();
             SaveCurrentIndex();
 
             if (value > 0)
@@ -192,6 +182,7 @@ public class OptionNavigation : MonoBehaviour
 
             LoadCurrentIndex();
 
+            soundManager.PlaySFX(soundManager.ChangePanel);
             openPanel();
 
             UnityEngine.Debug.Log("Current Tab Index: " + currentTabIndex);
@@ -200,26 +191,24 @@ public class OptionNavigation : MonoBehaviour
 
     private void OnNavigateMenu(InputAction.CallbackContext ctx)
     {
-        if (!ctx.performed || !uiOption.activeSelf) return;
-
         var value = ctx.ReadValue<float>();
-        if (Mathf.Approximately(value, 0f)) return;
-        if (ConfirmPanel != null && ConfirmPanel.activeSelf)
+        if (ConfirmPanel.activeSelf)
         {
             GameObject ApplyButton = GetConfirmApplyButton();
             GameObject CancelButton = GetConfirmCancelButton();
-            if (ApplyButton == null || CancelButton == null) return;
             GameObject currentSelected = EventSystem.current.currentSelectedGameObject;
 
             if (currentSelected == ApplyButton)
             {
                 if (value > 0)
                     EventSystem.current.SetSelectedGameObject(CancelButton);
+                    soundManager.PlaySFX(soundManager.MoveDown);
             }
             else if (currentSelected == CancelButton)
             {
                 if (value < 0)
                     EventSystem.current.SetSelectedGameObject(ApplyButton);
+                    soundManager.PlaySFX(soundManager.MoveUp);
             }
             else
             {
@@ -231,18 +220,18 @@ public class OptionNavigation : MonoBehaviour
         else 
         {
             Transform panel = GetCurrentPanel();
-            if (panel == null || panel.childCount == 0) return;
-
             GameObject previousOption = GetCurrentOption();
             SendPointerExit(previousOption);
 
             if (value > 0)
             {
                 currentSelectionIndex = Mathf.Min(currentSelectionIndex + 1, panel.childCount - 1);
+                soundManager.PlaySFX(soundManager.MoveDown);
             }
             else if (value < 0)
             {
                 currentSelectionIndex = Mathf.Max(currentSelectionIndex - 1, 0);
+                soundManager.PlaySFX(soundManager.MoveUp);
             }
 
             SelectCurrentOption();
@@ -251,42 +240,48 @@ public class OptionNavigation : MonoBehaviour
 
     private void OnAdjustValue(InputAction.CallbackContext ctx)
     {
-        if (!ctx.performed || !uiOption.activeSelf) return;
+        if (!uiOption.activeSelf) return;
+        if (ConfirmPanel.activeSelf) return;
 
         ResolveSettingsManager();
-        if (settingsManager == null || settingsManager.tempSettings == null) return;
+
+        if (ctx.canceled)
+        {
+            StopAdjustRepeat();
+            return;
+        }
+
+        if (!ctx.started) return;
 
         var value = ctx.ReadValue<float>();
         int direction = value > 0 ? 1 : value < 0 ? -1 : 0;
-        if (direction == 0) return;
-
-        switch (currentTabIndex)
+        if (direction == 1)
         {
-            case TabAudio:
-                AdjustAudioSettings(direction);
-                break;
-            case TabGraphics:
-                AdjustGraphicsSettings(direction);
-                break;
-            case TabKeybinds:
-                settingsManager.AdjustKeybind();
-                break;
-            case TabCredits:
-                break;
+            soundManager.PlaySFX(soundManager.MoveUp);
+        }
+         else if (direction == -1)
+        {
+            soundManager.PlaySFX(soundManager.MoveDown);
+        }
+
+        ApplyAdjust(direction);
+
+        if (currentTabIndex == TabAudio)
+        {
+            adjustDirection = direction;
+            if (adjustRepeatRoutine == null)
+                adjustRepeatRoutine = StartCoroutine(RepeatAdjust());
         }
     }
 
     private void onPlayer_Confirm(InputAction.CallbackContext ctx)
     {
-        if (!ctx.performed || !uiOption.activeSelf) return;
-
         ResolveSettingsManager();
-        if (settingsManager == null || settingsManager.tempSettings == null || ConfirmPanel == null) return;
         
         if (!ConfirmPanel.activeSelf)
         {
             if (settingsManager.HasUnsavedChanges())
-                TryOpenConfirmPanel();
+                OpenConfirmPanel();
             return;
         }
 
@@ -304,6 +299,7 @@ public class OptionNavigation : MonoBehaviour
         else if (EventSystem.current.currentSelectedGameObject == CancelButton)
         {
             ConfirmPanel.SetActive(false);
+            SyncTempSettingsFromCurrent();
             SyncCurrentTabUI();
         }
     }
@@ -311,47 +307,33 @@ public class OptionNavigation : MonoBehaviour
     public void ApplySettings()
     {
         ResolveSettingsManager();
-        if (settingsManager == null) return;
-
         settingsManager.ConfirmAndApply();
     }
 
     private void SubscribeInputActions()
     {
-        if (playerInput == null || playerInput.actions == null) return;
-
         closeMenuAction = playerInput.actions.FindAction("CloseMenu", false);
         TabSwitchAction = playerInput.actions.FindAction("TabSwitch", false);
         NavigateMenuAction = playerInput.actions.FindAction("NavigateMenu", false);
         AdjustValueAction = playerInput.actions.FindAction("AdjustValue", false);
         Player_Confirm = playerInput.actions.FindAction("Player_Confirm", false);
 
-        if (closeMenuAction != null)
-            closeMenuAction.performed += OnCloseMenu;
-        if (TabSwitchAction != null)
-            TabSwitchAction.performed += OnTabSwitch;
-        if (NavigateMenuAction != null)
-            NavigateMenuAction.performed += OnNavigateMenu;
-        if (AdjustValueAction != null)
-            AdjustValueAction.performed += OnAdjustValue;
-        if (Player_Confirm != null)
-            Player_Confirm.performed += onPlayer_Confirm;
+        closeMenuAction.performed += OnCloseMenu;
+        TabSwitchAction.performed += OnTabSwitch;
+        NavigateMenuAction.performed += OnNavigateMenu;
+        AdjustValueAction.started += OnAdjustValue;
+        AdjustValueAction.canceled += OnAdjustValue;
+        Player_Confirm.performed += onPlayer_Confirm;
     }
 
     private void UnsubscribeInputActions()
     {
-        if (playerInput == null || playerInput.actions == null) return;
-
-        if (closeMenuAction != null)
-            closeMenuAction.performed -= OnCloseMenu;
-        if (TabSwitchAction != null)
-            TabSwitchAction.performed -= OnTabSwitch;
-        if (NavigateMenuAction != null)
-            NavigateMenuAction.performed -= OnNavigateMenu;
-        if (AdjustValueAction != null)
-            AdjustValueAction.performed -= OnAdjustValue;
-        if (Player_Confirm != null)
-            Player_Confirm.performed -= onPlayer_Confirm;
+        closeMenuAction.performed -= OnCloseMenu;
+        TabSwitchAction.performed -= OnTabSwitch;
+        NavigateMenuAction.performed -= OnNavigateMenu;
+        AdjustValueAction.started -= OnAdjustValue;
+        AdjustValueAction.canceled -= OnAdjustValue;
+        Player_Confirm.performed -= onPlayer_Confirm;
 
         closeMenuAction = null;
         TabSwitchAction = null;
@@ -360,11 +342,62 @@ public class OptionNavigation : MonoBehaviour
         Player_Confirm = null;
     }
 
+    private void StopAdjustRepeat()
+    {
+        adjustDirection = 0;
+        if (adjustRepeatRoutine != null)
+            StopCoroutine(adjustRepeatRoutine);
+        adjustRepeatRoutine = null;
+    }
+
+    private IEnumerator RepeatAdjust()
+    {
+        float elapsed = 0f;
+        while (elapsed < adjustHoldDelay)
+        {
+            if (!uiOption.activeSelf || adjustDirection == 0) yield break;
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        while (uiOption.activeSelf && adjustDirection != 0)
+        {
+            if (adjustDirection == 1)
+            {
+                soundManager.PlaySFX(soundManager.MoveUp);
+            }
+             else if (adjustDirection == -1)
+            {
+                soundManager.PlaySFX(soundManager.MoveDown);
+            }
+            ApplyAdjust(adjustDirection);
+            yield return new WaitForSecondsRealtime(adjustRepeatRate);
+        }
+
+        adjustRepeatRoutine = null;
+    }
+
+    private void ApplyAdjust(int direction)
+    {
+        switch (currentTabIndex)
+        {
+            case TabAudio:
+                AdjustAudioSettings(direction);
+                break;
+            case TabGraphics:
+                AdjustGraphicsSettings(direction);
+                break;
+            case TabKeybinds:
+                settingsManager.AdjustKeybind();
+                break;
+            case TabCredits:
+                break;
+        }
+    }
+
     private void openPanel()
     {
         GameObject tabButton = GetTabButton(currentTabIndex);
-        if (tabButton == null) return;
-
         SendPointerEnter(tabButton);
 
         for (int i = TabCount; i < TabCount * 2; i++)
@@ -376,10 +409,7 @@ public class OptionNavigation : MonoBehaviour
         }
 
         Transform panel = GetCurrentPanel();
-        if (panel != null)
-        {
-            currentSelectionIndex = Mathf.Clamp(currentSelectionIndex, 0, panel.childCount - 1);
-        }
+        currentSelectionIndex = Mathf.Clamp(currentSelectionIndex, 0, panel.childCount - 1);
 
         SelectCurrentOption();
         SyncCurrentTabUI();
@@ -388,7 +418,6 @@ public class OptionNavigation : MonoBehaviour
     public void SyncCurrentTabUI()
     {
         ResolveSettingsManager();
-        if (settingsManager == null) return;
 
         if (settingsManager.tempSettings == null)
             settingsManager.InitTempSettings();
@@ -407,62 +436,53 @@ public class OptionNavigation : MonoBehaviour
         }
     }
 
+    public void SyncTempSettingsFromCurrent()
+    {
+        ResolveSettingsManager();
+        settingsManager.InitTempSettings();
+    }
+
     private Transform GetOptionRoot()
     {
-        if (uiOption == null || uiOption.transform.childCount == 0) return null;
         return uiOption.transform.GetChild(0);
     }
 
     private Transform GetCurrentPanel()
     {
         var root = GetOptionRoot();
-        if (root == null) return null;
-
         int panelIndex = currentTabIndex + TabCount;
-        if (panelIndex < 0 || panelIndex >= root.childCount) return null;
         return root.GetChild(panelIndex);
     }
 
     private GameObject GetTabButton(int tabIndex)
     {
         var root = GetOptionRoot();
-        if (root == null) return null;
-        if (tabIndex < 0 || tabIndex >= TabCount || tabIndex >= root.childCount) return null;
         return root.GetChild(tabIndex).gameObject;
     }
 
     private GameObject GetCurrentOption()
     {
         var panel = GetCurrentPanel();
-        if (panel == null) return null;
-        if (currentSelectionIndex < 0 || currentSelectionIndex >= panel.childCount) return null;
         return panel.GetChild(currentSelectionIndex).gameObject;
     }
 
     private GameObject GetOptionByIndex(int index)
     {
         var panel = GetCurrentPanel();
-        if (panel == null) return null;
-        if (index < 0 || index >= panel.childCount) return null;
         return panel.GetChild(index).gameObject;
     }
 
     private void SelectCurrentOption()
     {
         GameObject option = GetCurrentOption();
-        if (option == null) return;
-
         SendPointerEnter(option);
 
         GameObject control = GetOptionControl(option);
-        if (control != null)
-            EventSystem.current.SetSelectedGameObject(control);
+        EventSystem.current.SetSelectedGameObject(control);
     }
 
     private GameObject GetOptionControl(GameObject option)
     {
-        if (option == null) return null;
-
         var selectable = option.GetComponentInChildren<Selectable>(true);
         if (selectable != null) return selectable.gameObject;
 
@@ -474,22 +494,17 @@ public class OptionNavigation : MonoBehaviour
 
     private void SendPointerEnter(GameObject target)
     {
-        if (target == null) return;
         ExecuteEvents.Execute<IPointerEnterHandler>(target, new PointerEventData(EventSystem.current), ExecuteEvents.pointerEnterHandler);
     }
 
     private void SendPointerExit(GameObject target)
     {
-        if (target == null) return;
         ExecuteEvents.Execute<IPointerExitHandler>(target, new PointerEventData(EventSystem.current), ExecuteEvents.pointerExitHandler);
     }
 
-    private void TryOpenConfirmPanel()
+    private void OpenConfirmPanel()
     {
         ResolveSettingsManager();
-        if (settingsManager == null || ConfirmPanel == null) return;
-        if (!settingsManager.HasUnsavedChanges() || ConfirmPanel.activeSelf) return;
-
         ConfirmPanel.SetActive(true);
         confirmPanelOpenedFrame = Time.frameCount;
         SetConfirmDefaultSelection();
@@ -498,27 +513,22 @@ public class OptionNavigation : MonoBehaviour
     private void SetConfirmDefaultSelection()
     {
         GameObject ApplyButton = GetConfirmApplyButton();
-        if (ApplyButton != null)
-            EventSystem.current.SetSelectedGameObject(ApplyButton);
+        EventSystem.current.SetSelectedGameObject(ApplyButton);
     }
 
     private GameObject GetConfirmApplyButton()
     {
-        if (ConfirmPanel == null || ConfirmPanel.transform.childCount <= 1) return null;
         return ConfirmPanel.transform.GetChild(1).gameObject;
     }
 
     private GameObject GetConfirmCancelButton()
     {
-        if (ConfirmPanel == null || ConfirmPanel.transform.childCount <= 2) return null;
         return ConfirmPanel.transform.GetChild(2).gameObject;
     }
 
     private void SyncAudioTabUI()
     {
         var audio = settingsManager.tempSettings.audio;
-        if (audio == null) return;
-
         UpdateSlider(GetOptionByIndex(0), audio.masterVolume);
         UpdateSlider(GetOptionByIndex(1), audio.musicVolume);
         UpdateSlider(GetOptionByIndex(2), audio.environmentVolume);
@@ -531,8 +541,6 @@ public class OptionNavigation : MonoBehaviour
     private void SyncGraphicsTabUI()
     {
         var visual = settingsManager.tempSettings.visual;
-        if (visual == null) return;
-
         UpdateOptionValueAndToggle(0, visual.qualityPreset.ToString(), (int)visual.qualityPreset);
         UpdateOptionValueAndToggle(1, FormatResolution(visual.resolution), (int)visual.resolution);
         UpdateOptionToggle(2, visual.fullScreen, visual.fullScreen ? "On" : "Off");
@@ -548,8 +556,6 @@ public class OptionNavigation : MonoBehaviour
     private void UpdateOptionValueAndToggle(int optionIndex, string valueText, int toggleIndex)
     {
         GameObject option = GetOptionByIndex(optionIndex);
-        if (option == null) return;
-
         UpdateValueLabel(option, valueText);
         SetOptionToggleIndex(option, toggleIndex);
     }
@@ -557,8 +563,6 @@ public class OptionNavigation : MonoBehaviour
     private void UpdateOptionToggle(int optionIndex, bool value, string valueText)
     {
         GameObject option = GetOptionByIndex(optionIndex);
-        if (option == null) return;
-
         UpdateValueLabel(option, valueText);
         UpdateToggleValue(option, value);
     }
@@ -566,8 +570,6 @@ public class OptionNavigation : MonoBehaviour
     private void AdjustAudioSettings(int direction)
     {
         var audio = settingsManager.tempSettings.audio;
-        if (audio == null) return;
-
         switch (currentSelectionIndex)
         {
             case 0:
@@ -602,8 +604,6 @@ public class OptionNavigation : MonoBehaviour
     private void AdjustGraphicsSettings(int direction)
     {
         var visual = settingsManager.tempSettings.visual;
-        if (visual == null) return;
-
         switch (currentSelectionIndex)
         {
             case 0:
@@ -668,11 +668,7 @@ public class OptionNavigation : MonoBehaviour
 
     private void UpdateSlider(GameObject option, int value)
     {
-        if (option == null) return;
-
         var slider = option.GetComponentInChildren<Slider>(true);
-        if (slider == null) return;
-
         slider.SetValueWithoutNotify(value);
     }
 
@@ -683,11 +679,7 @@ public class OptionNavigation : MonoBehaviour
 
     private void UpdateToggleValue(GameObject option, bool value)
     {
-        if (option == null) return;
-
         var toggles = option.GetComponentsInChildren<Toggle>(true);
-        if (toggles == null || toggles.Length == 0) return;
-
         if (toggles.Length == 1)
         {
             toggles[0].SetIsOnWithoutNotify(value);
@@ -704,15 +696,9 @@ public class OptionNavigation : MonoBehaviour
 
     private void UpdateValueLabel(GameObject option, string valueText)
     {
-        if (option == null) return;
-
         var texts = option.GetComponentsInChildren<TMP_Text>(true);
-        if (texts == null || texts.Length == 0) return;
-
         foreach (var text in texts)
         {
-            if (text == null) continue;
-
             if (text.gameObject.name.IndexOf("value", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 text.text = valueText;
@@ -726,11 +712,7 @@ public class OptionNavigation : MonoBehaviour
 
     private void SetOptionToggleIndex(GameObject option, int toggleIndex)
     {
-        if (option == null) return;
-
         var toggles = option.GetComponentsInChildren<Toggle>(true);
-        if (toggles == null || toggles.Length == 0) return;
-
         int clampedIndex = Mathf.Clamp(toggleIndex, 0, toggles.Length - 1);
         for (int i = 0; i < toggles.Length; i++)
         {

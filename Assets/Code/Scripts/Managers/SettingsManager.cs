@@ -1,7 +1,7 @@
 using System.IO;
 using UnityEngine;
 using UnityEngine.Audio;
-using UnityEngine.InputSystem;  // Future
+using UnityEngine.InputSystem;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 
