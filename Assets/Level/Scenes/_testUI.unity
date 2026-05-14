@@ -156,7 +156,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 239}
+  m_AnchoredPosition: {x: 0, y: 178}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &108480
@@ -202,7 +202,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -811,7 +811,7 @@ GameObject:
   - component: {fileID: 60029574}
   - component: {fileID: 60029573}
   - component: {fileID: 60029572}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Hill
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -937,8 +937,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 624476589}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.492, y: 0}
-  m_AnchorMax: {x: 0.492, y: 1}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -2202,7 +2202,7 @@ GameObject:
   - component: {fileID: 208294402}
   - component: {fileID: 208294401}
   - component: {fileID: 208294400}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Climbing
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3315,7 +3315,7 @@ GameObject:
   - component: {fileID: 280098443}
   - component: {fileID: 280098442}
   - component: {fileID: 280098441}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Climbing-Merged
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5458,14 +5458,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5f1bf4b7cf8c034693d89506a866240, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentTime: 0
+  scoreText: {fileID: 108480}
+  highestTime: 0
+  highestScoreText: {fileID: 0}
+  mainSceneName: _testUI
   MaxHealth: 100
-  CurrentHealth: 70
+  CurrentHealth: 100
   healthBar: {fileID: 893402754}
   MaxSkillDuration: 4
   CurrentSkillDuration: 0
   IsUsingSkill: 0
   skillIcon: {fileID: 290127057}
   slow: 0.5
+  Head: {fileID: 1257166639}
+  levelLayers:
+    serializedVersion: 2
+    m_Bits: 64
+  headContactRadius: 10
+  headImpactDamage: 10
   uiManager: {fileID: 1105022498}
 --- !u!4 &442388005
 Transform:
@@ -7168,7 +7179,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -7.9999847}
+  m_AnchoredPosition: {x: 0, y: -8}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &620032899
@@ -9619,7 +9630,7 @@ GameObject:
   - component: {fileID: 799015098}
   - component: {fileID: 799015097}
   - component: {fileID: 799015096}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cube (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -12321,59 +12332,6 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_IsOn: 0
---- !u!1 &992131734
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 992131736}
-  - component: {fileID: 992131735}
-  m_Layer: 0
-  m_Name: Score manager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &992131735
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 992131734}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b5f1bf4b7cf8c034693d89506a866240, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  MaxHealth: 100
-  CurrentHealth: 70
-  healthBar: {fileID: 893402754}
-  MaxSkillDuration: 4
-  CurrentSkillDuration: 0
-  IsUsingSkill: 0
-  skillIcon: {fileID: 290127057}
-  slow: 0.5
-  uiManager: {fileID: 1105022498}
---- !u!4 &992131736
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 992131734}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1006749021
 GameObject:
   m_ObjectHideFlags: 0
@@ -12391,7 +12349,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1006749022
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15435,6 +15393,7 @@ MonoBehaviour:
   _actionState: 0
   _physics: {fileID: 1269763770}
   _interaction: {fileID: 1269763769}
+  gameManager: {fileID: 442388004}
 --- !u!153 &1269763772
 ConfigurableJoint:
   m_ObjectHideFlags: 0
@@ -16522,7 +16481,7 @@ GameObject:
   - component: {fileID: 1318136767}
   - component: {fileID: 1318136766}
   - component: {fileID: 1318136765}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -17191,7 +17150,7 @@ RectTransform:
   m_Father: {fileID: 1433161935}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0.492, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: -5.0419, y: 0}
   m_SizeDelta: {x: -0.0839, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -18069,7 +18028,7 @@ GameObject:
   - component: {fileID: 1471867659}
   - component: {fileID: 1471867658}
   - component: {fileID: 1471867661}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Lake
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -18474,7 +18433,7 @@ GameObject:
   - component: {fileID: 1497638106}
   - component: {fileID: 1497638105}
   - component: {fileID: 1497638104}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Bridge
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -25064,7 +25023,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2145949902
 RectTransform:
   m_ObjectHideFlags: 0
@@ -25336,7 +25295,6 @@ SceneRoots:
   - {fileID: 2114237567}
   - {fileID: 1105022499}
   - {fileID: 45264344}
-  - {fileID: 992131736}
   - {fileID: 6310556510232058774}
   - {fileID: 2140881670}
   - {fileID: 1424200127}

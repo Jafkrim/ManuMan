@@ -60,7 +60,7 @@ public class PlayerManager : MonoBehaviour
         _physics.RecoverToGrounded();
     }
 
-    GameManager gameManager;
+    public GameManager gameManager;
     private void HandleSlowMotion()
     {
         if (!Input.GetKeyDown(RecoverKey))

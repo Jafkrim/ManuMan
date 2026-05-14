@@ -31,7 +31,15 @@ public class GameManager : MonoBehaviour
     public float CurrentSkillDuration = 0f;
     public bool IsUsingSkill = false;
     public Image skillIcon;
-    public float slow = 0.5f;
+    public float slow = 0.3f;
+    public GameObject Head;
+    public LayerMask levelLayers;
+    public float headContactRadius;
+    public float headImpactVelocityThreshold;
+    public int headImpactDamage = 10;
+
+    private Rigidbody headRigidbody;
+    private bool wasHeadInContact = false;
 
     public UIManager uiManager;
 
@@ -41,6 +49,9 @@ public class GameManager : MonoBehaviour
         // get path
         saveFilePath = Application.persistentDataPath + "/savefile.json";
         LoadBestScore();
+
+        if (Head != null)
+            headRigidbody = Head.GetComponent<Rigidbody>();
     }
 
     void Update()
@@ -72,6 +83,8 @@ public class GameManager : MonoBehaviour
             FinishGame();
         }
         skillIcon.fillAmount = CurrentSkillDuration / MaxSkillDuration;
+
+        TakeDamage();
 
     }
 
@@ -153,6 +166,28 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void TakeDamage()
+    {
+        // if (Head == null || headRigidbody == null) return;
+
+        bool headInContact = Physics.CheckSphere(
+            Head.transform.position,
+            headContactRadius,
+            levelLayers,
+            QueryTriggerInteraction.Ignore
+        );
+
+        if (headInContact && !wasHeadInContact)
+        {
+            float speed = headRigidbody.velocity.magnitude;
+            if (speed >= headImpactVelocityThreshold)
+            {
+                CurrentHealth = Mathf.Max(0, CurrentHealth - headImpactDamage);
+            }
+        }
+
+        wasHeadInContact = headInContact;
+    }
     
 }
 
