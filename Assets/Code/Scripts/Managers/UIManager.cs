@@ -148,6 +148,7 @@ public class UIManager : MonoBehaviour
             uiPause.SetActive(true);
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
+            EventSystem.current.SetSelectedGameObject(ResumeButton);
             if (playerInput != null)
                 playerInput.SwitchCurrentActionMap("UI");
                 // UnityEngine.Debug.Log("Current Action Map: " + playerInput.currentActionMap.name);
@@ -208,7 +209,7 @@ public class UIManager : MonoBehaviour
         uiOption.SetActive(true);
 
         var optionNavigation = FindObjectOfType<OptionNavigation>();
-        optionNavigation.currentTabIndex = 0;   // set tab FIRST
+        optionNavigation.currentTabIndex = 0;
         optionNavigation.LoadCurrentIndex();
 
         var settingManager = FindObjectOfType<SettingsManager>();
