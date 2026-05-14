@@ -255,6 +255,14 @@ public class OptionNavigation : MonoBehaviour
 
         var value = ctx.ReadValue<float>();
         int direction = value > 0 ? 1 : value < 0 ? -1 : 0;
+        if (direction == 1)
+        {
+            soundManager.PlaySFX(soundManager.MoveUp);
+        }
+         else if (direction == -1)
+        {
+            soundManager.PlaySFX(soundManager.MoveDown);
+        }
 
         ApplyAdjust(direction);
 
@@ -354,6 +362,14 @@ public class OptionNavigation : MonoBehaviour
 
         while (uiOption.activeSelf && adjustDirection != 0)
         {
+            if (adjustDirection == 1)
+            {
+                soundManager.PlaySFX(soundManager.MoveUp);
+            }
+             else if (adjustDirection == -1)
+            {
+                soundManager.PlaySFX(soundManager.MoveDown);
+            }
             ApplyAdjust(adjustDirection);
             yield return new WaitForSecondsRealtime(adjustRepeatRate);
         }
