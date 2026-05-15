@@ -31,17 +31,24 @@ public class GameManager : MonoBehaviour
     public float CurrentSkillDuration = 0f;
     public bool IsUsingSkill = false;
     public Image skillIcon;
-    public float slow = 0.3f;
+    public float slow = 0.1f;
     public GameObject Head;
     public LayerMask levelLayers;
-    public float headContactRadius;
+    public float headContactRadius = 0.2f;
     public float headImpactVelocityThreshold;
     public int headImpactDamage = 10;
 
     private Rigidbody headRigidbody;
     private bool wasHeadInContact = false;
+    private bool wasDead = false;
 
     public UIManager uiManager;
+
+    public GameObject Player;
+    public GameObject loseTrigger;
+    public GameObject cehckpointTrigger1;
+    public GameObject cehckpointTrigger2;
+    [SerializeField] private Vector3 checkpointPosition = new Vector3(4f, 2f, -11f);
 
     void Start()
     {
@@ -65,6 +72,8 @@ public class GameManager : MonoBehaviour
         else if (IsUsingSkill && CurrentSkillDuration >= MaxSkillDuration)
         {
             IsUsingSkill = false;
+            Time.timeScale = 1f;
+            Time.fixedDeltaTime = 0.02f * Time.timeScale;
         }
         else if (!IsUsingSkill && CurrentSkillDuration > 0)
         {
@@ -84,7 +93,29 @@ public class GameManager : MonoBehaviour
         }
         skillIcon.fillAmount = CurrentSkillDuration / MaxSkillDuration;
 
+        bool canReadSkillInput = uiManager == null || !uiManager.MenuToggledThisFrame;
+        if (uiManager != null && uiManager.uiGame.activeSelf == true && canReadSkillInput)
+        {
+            if (Input.GetKeyDown(KeyCode.E) && !IsUsingSkill)
+            {
+                IsUsingSkill = true;
+                Time.timeScale = slow;
+                Time.fixedDeltaTime = 0.02f * Time.timeScale;
+            } 
+            else if (Input.GetKeyDown(KeyCode.E) && IsUsingSkill)
+            {
+                IsUsingSkill = false;
+                Time.timeScale = 1f;
+                Time.fixedDeltaTime = 0.02f * Time.timeScale;
+            } 
+        }
+
         TakeDamage();
+
+        bool isDead = CurrentHealth <= 0;
+        if (isDead && !wasDead)
+            TeleportPlayerToCheckpoint();
+        wasDead = isDead;
 
     }
 
@@ -145,27 +176,6 @@ public class GameManager : MonoBehaviour
         }
     }
 
-
-    public void SlowDownTime()
-    {
-        bool canReadSkillInput = uiManager == null || !uiManager.MenuToggledThisFrame;
-        if (uiManager != null && uiManager.uiGame.activeSelf == true && canReadSkillInput)
-        {
-            if (!IsUsingSkill)
-            {
-                IsUsingSkill = true;
-                Time.timeScale = slow;
-                Time.fixedDeltaTime = 0.02f * Time.timeScale;
-            } 
-            else if (IsUsingSkill)
-            {
-                IsUsingSkill = false;
-                Time.timeScale = 1f;
-                Time.fixedDeltaTime = 0.02f * Time.timeScale;
-            } 
-        }
-    }
-
     public void TakeDamage()
     {
         // if (Head == null || headRigidbody == null) return;
@@ -187,6 +197,34 @@ public class GameManager : MonoBehaviour
         }
 
         wasHeadInContact = headInContact;
+    }
+
+    public void TeleportPlayerToCheckpoint()
+    {
+        if (Player == null) return;
+
+        Vector3 targetPosition = checkpointPosition;
+        Vector3 delta = targetPosition - Player.transform.position;
+
+        Rigidbody[] bodies = Player.GetComponentsInChildren<Rigidbody>();
+        if (bodies.Length > 0)
+        {
+            foreach (var body in bodies)
+            {
+                body.position += delta;
+                body.velocity = Vector3.zero;
+                body.angularVelocity = Vector3.zero;
+            }
+        }
+        else
+        {
+            Player.transform.position = targetPosition;
+        }
+    }
+
+    public void SetCheckpoint(Vector3 position)
+    {
+        checkpointPosition = position + Vector3.up * 2f;
     }
     
 }
