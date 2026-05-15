@@ -31,10 +31,10 @@ public class GameManager : MonoBehaviour
     public float CurrentSkillDuration = 0f;
     public bool IsUsingSkill = false;
     public Image skillIcon;
-    public float slow = 0.3f;
+    public float slow = 0.1f;
     public GameObject Head;
     public LayerMask levelLayers;
-    public float headContactRadius;
+    public float headContactRadius = 0.2f;
     public float headImpactVelocityThreshold;
     public int headImpactDamage = 10;
 
@@ -65,6 +65,8 @@ public class GameManager : MonoBehaviour
         else if (IsUsingSkill && CurrentSkillDuration >= MaxSkillDuration)
         {
             IsUsingSkill = false;
+            Time.timeScale = 1f;
+            Time.fixedDeltaTime = 0.02f * Time.timeScale;
         }
         else if (!IsUsingSkill && CurrentSkillDuration > 0)
         {
@@ -83,6 +85,23 @@ public class GameManager : MonoBehaviour
             FinishGame();
         }
         skillIcon.fillAmount = CurrentSkillDuration / MaxSkillDuration;
+
+        bool canReadSkillInput = uiManager == null || !uiManager.MenuToggledThisFrame;
+        if (uiManager != null && uiManager.uiGame.activeSelf == true && canReadSkillInput)
+        {
+            if (Input.GetKeyDown(KeyCode.E) && !IsUsingSkill)
+            {
+                IsUsingSkill = true;
+                Time.timeScale = slow;
+                Time.fixedDeltaTime = 0.02f * Time.timeScale;
+            } 
+            else if (Input.GetKeyDown(KeyCode.E) && IsUsingSkill)
+            {
+                IsUsingSkill = false;
+                Time.timeScale = 1f;
+                Time.fixedDeltaTime = 0.02f * Time.timeScale;
+            } 
+        }
 
         TakeDamage();
 
@@ -142,27 +161,6 @@ public class GameManager : MonoBehaviour
         {
             // no score yet
             if (highestScoreText != null) highestScoreText.text = "--:--.--";
-        }
-    }
-
-
-    public void SlowDownTime()
-    {
-        bool canReadSkillInput = uiManager == null || !uiManager.MenuToggledThisFrame;
-        if (uiManager != null && uiManager.uiGame.activeSelf == true && canReadSkillInput)
-        {
-            if (!IsUsingSkill)
-            {
-                IsUsingSkill = true;
-                Time.timeScale = slow;
-                Time.fixedDeltaTime = 0.02f * Time.timeScale;
-            } 
-            else if (IsUsingSkill)
-            {
-                IsUsingSkill = false;
-                Time.timeScale = 1f;
-                Time.fixedDeltaTime = 0.02f * Time.timeScale;
-            } 
         }
     }
 

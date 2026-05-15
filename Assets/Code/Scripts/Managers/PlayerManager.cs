@@ -42,7 +42,6 @@ public class PlayerManager : MonoBehaviour
         HandleLimbSelection();
         HandleLimbMovement();
         HandleRecovery();
-        HandleSlowMotion();
     }
 
     #endregion
@@ -58,18 +57,6 @@ public class PlayerManager : MonoBehaviour
             return;
 
         _physics.RecoverToGrounded();
-    }
-
-    public GameManager gameManager;
-    private void HandleSlowMotion()
-    {
-        if (!Input.GetKeyDown(RecoverKey))
-            return;
-
-        if (_movementState != MovementState.Climbing)
-            return;
-
-        gameManager.SlowDownTime();
     }
 
     private void HandleLimbSelection()

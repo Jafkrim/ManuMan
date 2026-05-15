@@ -6,6 +6,8 @@ public class SoundManager : MonoBehaviour
 {
     public static SoundManager Instance;
 
+    private UIManager uiManager;
+
     [Header("Sources")]
     public AudioSource sfxSource;
 
@@ -20,6 +22,7 @@ public class SoundManager : MonoBehaviour
     void Start()
     {
         Instance = this;
+        uiManager = FindObjectOfType<UIManager>();
     }
 
     void Update()
@@ -29,6 +32,8 @@ public class SoundManager : MonoBehaviour
 
     public void PlaySFX(AudioClip clip)
     {   
+        if (uiManager != null && uiManager.uiGame != null && uiManager.uiGame.activeSelf)
+            return;
         sfxSource.PlayOneShot(clip);
     }
 }

@@ -36,14 +36,20 @@ public class UIManager : MonoBehaviour
 
     public SoundManager soundManager;
 
+    [SerializeField] private PlayerManager playerManager;
+    private PlayerPhysics.LimbType? lastActiveLimb;
+    private bool hasLimbText;
+
     private void Awake()
     {
         ResolvePlayerInput();
+        ResolvePlayerManager();
     }
 
     private void OnEnable()
     {
         ResolvePlayerInput();
+        ResolvePlayerManager();
         SubscribeInputActions();
     }
 
@@ -101,6 +107,13 @@ public class UIManager : MonoBehaviour
         if (playerInput != null) return;
 
         playerInput = FindObjectOfType<PlayerInput>();
+    }
+
+    private void ResolvePlayerManager()
+    {
+        if (playerManager != null) return;
+
+        playerManager = FindObjectOfType<PlayerManager>();
     }
 
     private void SubscribeInputActions()
@@ -300,18 +313,38 @@ public class UIManager : MonoBehaviour
 
     void Update()
     {
+        if (text == null) return;
 
-        if (Keyboard.current.anyKey.wasPressedThisFrame)
+        PlayerPhysics.LimbType? activeLimb =
+            playerManager != null
+            ? playerManager.ActiveLimb
+            : null;
+
+        if (hasLimbText && activeLimb == lastActiveLimb)
+            return;
+
+        lastActiveLimb = activeLimb;
+        hasLimbText = true;
+
+        text.text = activeLimb.HasValue
+            ? "Limb Selected: " + FormatLimb(activeLimb.Value)
+            : "Limb Selected: None";
+    }
+
+    private string FormatLimb(PlayerPhysics.LimbType limb)
+    {
+        switch (limb)
         {
-            foreach (var key in Keyboard.current.allKeys)
-            {
-                if (key.wasPressedThisFrame)
-                {
-                    text.text = "Key Pressed: " + key.displayName;
-                    UnityEngine.Debug.Log("Key Pressed: " + key.displayName);
-                    break;
-                }
-            }
+            case PlayerPhysics.LimbType.LeftHand:
+                return "Left Hand";
+            case PlayerPhysics.LimbType.RightHand:
+                return "Right Hand";
+            case PlayerPhysics.LimbType.LeftFoot:
+                return "Left Foot";
+            case PlayerPhysics.LimbType.RightFoot:
+                return "Right Foot";
+            default:
+                return limb.ToString();
         }
     }
 
