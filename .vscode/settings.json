@@ -60,14 +60,14 @@
         "*.asset": "yaml",
         "*.meta": "yaml",
         "*.prefab": "yaml",
-        "*.unity": "yaml",
+        "*.unity": "yaml"
     },
     "explorer.fileNesting.enabled": true,
     "explorer.fileNesting.patterns": {
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-    "dotnet.defaultSolution": "ManuMan.slnx",
+    "dotnet.defaultSolution": "ManuMan-2026-05-15-12-52-30.slnx",
     "dotnet.enableWorkspaceBasedDevelopment": false,
     "dotnet.preferCSharpExtension": true
 }
