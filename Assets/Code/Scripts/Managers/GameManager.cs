@@ -40,8 +40,15 @@ public class GameManager : MonoBehaviour
 
     private Rigidbody headRigidbody;
     private bool wasHeadInContact = false;
+    private bool wasDead = false;
 
     public UIManager uiManager;
+
+    public GameObject Player;
+    public GameObject loseTrigger;
+    public GameObject cehckpointTrigger1;
+    public GameObject cehckpointTrigger2;
+    [SerializeField] private Vector3 checkpointPosition = new Vector3(4f, 2f, -11f);
 
     void Start()
     {
@@ -104,6 +111,11 @@ public class GameManager : MonoBehaviour
         }
 
         TakeDamage();
+
+        bool isDead = CurrentHealth <= 0;
+        if (isDead && !wasDead)
+            TeleportPlayerToCheckpoint();
+        wasDead = isDead;
 
     }
 
@@ -185,6 +197,34 @@ public class GameManager : MonoBehaviour
         }
 
         wasHeadInContact = headInContact;
+    }
+
+    public void TeleportPlayerToCheckpoint()
+    {
+        if (Player == null) return;
+
+        Vector3 targetPosition = checkpointPosition;
+        Vector3 delta = targetPosition - Player.transform.position;
+
+        Rigidbody[] bodies = Player.GetComponentsInChildren<Rigidbody>();
+        if (bodies.Length > 0)
+        {
+            foreach (var body in bodies)
+            {
+                body.position += delta;
+                body.velocity = Vector3.zero;
+                body.angularVelocity = Vector3.zero;
+            }
+        }
+        else
+        {
+            Player.transform.position = targetPosition;
+        }
+    }
+
+    public void SetCheckpoint(Vector3 position)
+    {
+        checkpointPosition = position + Vector3.up * 2f;
     }
     
 }

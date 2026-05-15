@@ -24,6 +24,7 @@ public class PlayerManager : MonoBehaviour
     [Header("References")]
     [SerializeField] private PlayerPhysics _physics;
     [SerializeField] private PlayerInteraction _interaction;
+    [SerializeField] private GameManager gameManager;
 
     private readonly List<ConditionEffect> _conditions = new();
 
@@ -35,6 +36,12 @@ public class PlayerManager : MonoBehaviour
 
     #region UNITY
 
+    private void Awake()
+    {
+        if (gameManager == null)
+            gameManager = FindObjectOfType<GameManager>();
+    }
+
     private void Update()
     {
         TickConditions();
@@ -42,6 +49,23 @@ public class PlayerManager : MonoBehaviour
         HandleLimbSelection();
         HandleLimbMovement();
         HandleRecovery();
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (gameManager == null) return;
+
+        if (IsTriggerMatch(gameManager.loseTrigger, other))
+        {
+            gameManager.TeleportPlayerToCheckpoint();
+            return;
+        }
+
+        if (IsTriggerMatch(gameManager.cehckpointTrigger1, other) ||
+            IsTriggerMatch(gameManager.cehckpointTrigger2, other))
+        {
+            gameManager.SetCheckpoint(other.transform.position);
+        }
     }
 
     #endregion
@@ -207,6 +231,15 @@ public class PlayerManager : MonoBehaviour
     }
 
     #endregion
+
+    private bool IsTriggerMatch(GameObject trigger, Collider other)
+    {
+        if (trigger == null || other == null) return false;
+
+        Transform triggerTransform = trigger.transform;
+        return other.transform == triggerTransform ||
+            other.transform.IsChildOf(triggerTransform);
+    }
 
     #region ENUMS
 
