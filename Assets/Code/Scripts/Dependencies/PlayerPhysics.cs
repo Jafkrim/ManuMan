@@ -66,24 +66,24 @@ public class PlayerPhysics : MonoBehaviour
 
     [Header("Fall Detection")]
     [SerializeField]
-    private float _fallAngle = 30f;
+    private float _fallAngle = 20f;
 
     [SerializeField]
-    private float _recoverAngle = 25;
+    private float _recoverAngle = 20f;
 
     [Header("Body Drive")]
-    [SerializeField] private float _bodySpring = 1500f;
-    [SerializeField] private float _bodyDamper = 150f;
+    [SerializeField] private float _bodySpring = 3000f;
+    [SerializeField] private float _bodyDamper = 300f;
     [SerializeField] private float _bodyForce = 999999f;
 
     [Header("Upper Arm Drive")]
-    [SerializeField] private float _upperArmSpring = 50f;
-    [SerializeField] private float _upperArmDamper = 5f;
+    [SerializeField] private float _upperArmSpring = 25f;
+    [SerializeField] private float _upperArmDamper = 2.5f;
     [SerializeField] private float _upperArmForce = 999999f;
 
     [Header("Arm Drive")]
-    [SerializeField] private float _armSpring = 100f;
-    [SerializeField] private float _armDamper = 10f;
+    [SerializeField] private float _armSpring = 500f;
+    [SerializeField] private float _armDamper = 50f;
     [SerializeField] private float _armForce = 999999f;
 
     [Header("Hips Drive")]
@@ -92,8 +92,8 @@ public class PlayerPhysics : MonoBehaviour
     [SerializeField] private float _hipsForce = 999999f;
 
     [Header("Knee Drive")]
-    [SerializeField] private float _kneeSpring = 500f;
-    [SerializeField] private float _kneeDamper = 50f;
+    [SerializeField] private float _kneeSpring = 750f;
+    [SerializeField] private float _kneeDamper = 75f;
     [SerializeField] private float _kneeForce = 999999f;
 
     private float _bodyYaw;
@@ -126,6 +126,11 @@ public class PlayerPhysics : MonoBehaviour
     private JointDrive _armDrive;
     private JointDrive _hipsDrive;
     private JointDrive _kneeDrive;
+    [Header("Rotation Stabilization")]
+    [SerializeField] private float _rotationStabilityBoost = 4f;
+    [SerializeField] private float _rotationStabilityLerp = 8f;
+
+    private float _rotationStability;
 
     #region UNITY
 
@@ -326,26 +331,29 @@ public class PlayerPhysics : MonoBehaviour
 
     public void RotateBody(float input)
     {
-        if (!_bodyRb)
-            return;
+        if (!_bodyRb) return;
 
-        if (
-            _player.movementState ==
-            PlayerManager.MovementState.Falling
-        )
+        if (_player.movementState == PlayerManager.MovementState.Falling)
             return;
 
         _bodyYaw += input * 2f;
+
+        float intensity = Mathf.Abs(input);
+
+        // 🔥 Boost stability when actively rotating
+        _rotationStability =
+            Mathf.Lerp(
+                _rotationStability,
+                intensity,
+                Time.fixedDeltaTime * _rotationStabilityLerp
+            );
 
         Vector3 torque =
             _bodyRb.transform.up *
             input *
             _turnTorque;
 
-        _bodyRb.AddTorque(
-            torque,
-            ForceMode.Acceleration
-        );
+        _bodyRb.AddTorque(torque, ForceMode.Acceleration);
 
         _bodyRb.angularVelocity =
             Vector3.ClampMagnitude(
@@ -368,10 +376,20 @@ public class PlayerPhysics : MonoBehaviour
             PlayerManager.MovementState.Grounded
             || _recovering;
 
-        JointDrive drive =
-            grounded
-            ? _bodyDrive
-            : CreateZeroDrive();
+JointDrive drive;
+
+if (grounded)
+{
+    float boost = 1f + (_rotationStability * _rotationStabilityBoost);
+
+    drive = _bodyDrive;
+    drive.positionSpring *= boost;
+    drive.positionDamper *= boost;
+}
+else
+{
+    drive = CreateZeroDrive();
+}
 
         ApplyBalance(
             _bodyJoint,
@@ -449,42 +467,57 @@ public class PlayerPhysics : MonoBehaviour
         joint.slerpDrive = drive;
     }
 
-    private void ApplyBalance(
-        ConfigurableJoint joint,
-        JointDrive drive
-    )
+ private void ApplyBalance(
+    ConfigurableJoint joint,
+    JointDrive drive
+)
+{
+    if (!joint)
+        return;
+
+    joint.rotationDriveMode =
+        RotationDriveMode.Slerp;
+
+    JointDrive finalDrive = drive;
+
+    if (_recovering)
     {
-        if (!joint)
-            return;
-
-        joint.rotationDriveMode =
-            RotationDriveMode.Slerp;
-
-        JointDrive finalDrive = drive;
-
-        if (_recovering)
-        {
-            finalDrive.positionSpring *= 5f;
-            finalDrive.positionDamper *= 3f;
-        }
-
-        joint.slerpDrive = finalDrive;
-
-        if (joint == _bodyJoint)
-        {
-            joint.targetRotation =
-                Quaternion.Euler(
-                    0f,
-                    0f,
-                    _bodyYaw
-                );
-        }
-        else
-        {
-            joint.targetRotation =
-                Quaternion.identity;
-        }
+        finalDrive.positionSpring *= 5f;
+        finalDrive.positionDamper *= 3f;
     }
+
+    joint.slerpDrive = finalDrive;
+
+    if (joint == _bodyJoint)
+    {
+        // Left: forward = positive _leftHipPose  (joint uses -_leftHipPose)
+        // Right: forward = negative _rightHipPose (joint uses +_rightHipPose)
+        // So negate right to normalize both to same direction
+        float avgHipPose = (_leftHipPose + (-_rightHipPose)) * 0.5f;
+
+        float balancePitch = avgHipPose * 0.5f;
+
+        joint.targetRotation =
+            Quaternion.Euler(
+                balancePitch,
+                0f,
+                _bodyYaw
+            );
+    }
+    else
+    {
+        joint.targetRotation =
+            Quaternion.identity;
+    }
+
+    if (_rotationStability > 0.01f)
+    {
+        float limbBoost = 1f + _rotationStability * 1.2f;
+        finalDrive.positionSpring *= limbBoost;
+        finalDrive.positionDamper *= limbBoost;
+        joint.slerpDrive = finalDrive;
+    }
+}
 
     #endregion
 
@@ -584,30 +617,38 @@ if (rb == _leftHand || rb == _rightHand)
     // LEGS
     else
     {
-        if (rb == _leftFoot)
-        {
-            _leftHipPose += horizontal * legPoseSpeed;
-            _leftKneePose += vertical * legPoseSpeed;
+// LEGS
+if (rb == _leftFoot)
+{
+    _leftHipPose += horizontal * legPoseSpeed;
+    _leftKneePose += vertical * legPoseSpeed;
 
-            _leftHipPose = Mathf.Clamp(_leftHipPose, -70f, 70f);
-            _leftKneePose = Mathf.Clamp(_leftKneePose, -120f, 5f);
+    _leftHipPose = Mathf.Clamp(_leftHipPose, -70f, 70f);
+    _leftKneePose = Mathf.Clamp(_leftKneePose, -120f, 5f);
 
-            _leftHipsJoint.targetRotation = Quaternion.Euler(-_leftHipPose, 0f, 0f);
-            _leftKneeJoint.targetRotation = Quaternion.Euler(_leftKneePose, 0f, 0f);
-        }
-        else if (rb == _rightFoot)
-        {
-            _rightHipPose += horizontal * legPoseSpeed;
-            _rightKneePose += vertical * legPoseSpeed;
+    _leftHipsJoint.targetRotation = Quaternion.Euler(-_leftHipPose, 0f, 0f);
+    _leftKneeJoint.targetRotation = Quaternion.Euler(_leftKneePose, 0f, 0f);
+}
+else if (rb == _rightFoot)
+{
+    _rightHipPose += horizontal * legPoseSpeed;
+    _rightKneePose += vertical * legPoseSpeed;
 
-            _rightHipPose = Mathf.Clamp(_rightHipPose, -70f, 70f);
-            _rightKneePose = Mathf.Clamp(_rightKneePose, -120f, 5f);
+    _rightHipPose = Mathf.Clamp(_rightHipPose, -70f, 70f);
+    _rightKneePose = Mathf.Clamp(_rightKneePose, -120f, 5f);
 
-            _rightHipsJoint.targetRotation = Quaternion.Euler(_rightHipPose, 0f, 0f);
-            _rightKneeJoint.targetRotation = Quaternion.Euler(_rightKneePose, 0f, 0f);
-        }
+    _rightHipsJoint.targetRotation = Quaternion.Euler(_rightHipPose, 0f, 0f);
+    _rightKneeJoint.targetRotation = Quaternion.Euler(_rightKneePose, 0f, 0f);
+}
 
-        ApplyMovementForce(rb, new Vector2(horizontal, 0f));
+// Scale force by how far hip is posed — more extension = more push
+float hipExtension = rb == _leftFoot
+    ? Mathf.Abs(_leftHipPose)
+    : Mathf.Abs(_rightHipPose);
+
+float extensionScale = Mathf.InverseLerp(0f, 70f, hipExtension);
+
+ApplyMovementForce(rb, new Vector2(horizontal * (1f + extensionScale * 3f), 0f));
     }
 }
 
