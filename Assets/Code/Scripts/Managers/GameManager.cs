@@ -48,6 +48,7 @@ public class GameManager : MonoBehaviour
     public GameObject loseTrigger;
     public GameObject cehckpointTrigger1;
     public GameObject cehckpointTrigger2;
+    public GameObject FinishTrigger;
     [SerializeField] private Vector3 checkpointPosition = new Vector3(4f, 2f, -11f);
 
     void Start()

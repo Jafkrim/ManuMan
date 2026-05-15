@@ -61,6 +61,12 @@ public class PlayerManager : MonoBehaviour
             return;
         }
 
+        if (IsTriggerMatch(gameManager.FinishTrigger, other))
+        {
+            gameManager.FinishGame();
+            return;
+        }
+
         if (IsTriggerMatch(gameManager.cehckpointTrigger1, other) ||
             IsTriggerMatch(gameManager.cehckpointTrigger2, other))
         {
