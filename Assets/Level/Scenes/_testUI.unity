@@ -2915,10 +2915,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sfxSource: {fileID: 224767177}
+  musicSource: {fileID: 224767177}
   MoveUp: {fileID: 8300000, guid: abb583acab2b5074e89d407106ebfe66, type: 3}
   MoveDown: {fileID: 8300000, guid: 6cc650c89f0cfc74ba11f95a79238305, type: 3}
   Confirm: {fileID: 8300000, guid: f9fbc13aa1279ae4fa32ea28f87772d1, type: 3}
   ChangePanel: {fileID: 8300000, guid: f11d06a23ad993c4b85d8bcc06607d6d, type: 3}
+  backgroundMusic: {fileID: 8300000, guid: 0b12ed9a6f330ce46b1842c5a97f6c12, type: 3}
   AudioSettings:
     masterVolume: 100
     musicVolume: 100
@@ -3278,7 +3280,7 @@ Transform:
   m_GameObject: {fileID: 226775558}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 3.123, y: 1.656, z: 7.693}
+  m_LocalPosition: {x: 3.95, y: 1.46, z: -10.563}
   m_LocalScale: {x: 100, y: 99.999985, z: 99.999985}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -8426,7 +8428,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -8}
+  m_AnchoredPosition: {x: 0, y: -7.9999847}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &620032899

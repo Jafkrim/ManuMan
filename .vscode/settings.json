@@ -67,7 +67,7 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-    "dotnet.defaultSolution": "ManuMan-2026-05-15-12-52-30.slnx",
+    "dotnet.defaultSolution": "ManuMan.slnx",
     "dotnet.enableWorkspaceBasedDevelopment": false,
     "dotnet.preferCSharpExtension": true
 }
