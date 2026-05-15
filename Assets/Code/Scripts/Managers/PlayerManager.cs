@@ -74,19 +74,22 @@ public class PlayerManager : MonoBehaviour
 
     private void HandleLimbSelection()
     {
-        _activeLimb = null;
+        if (Input.GetKeyDown(LeftHandKey))
+            ToggleLimb(PlayerPhysics.LimbType.LeftHand);
+        else if (Input.GetKeyDown(RightHandKey))
+            ToggleLimb(PlayerPhysics.LimbType.RightHand);
+        else if (Input.GetKeyDown(LeftFootKey))
+            ToggleLimb(PlayerPhysics.LimbType.LeftFoot);
+        else if (Input.GetKeyDown(RightFootKey))
+            ToggleLimb(PlayerPhysics.LimbType.RightFoot);
+    }
 
-        if (Input.GetKey(LeftHandKey))
-            _activeLimb = PlayerPhysics.LimbType.LeftHand;
-
-        else if (Input.GetKey(RightHandKey))
-            _activeLimb = PlayerPhysics.LimbType.RightHand;
-
-        else if (Input.GetKey(LeftFootKey))
-            _activeLimb = PlayerPhysics.LimbType.LeftFoot;
-
-        else if (Input.GetKey(RightFootKey))
-            _activeLimb = PlayerPhysics.LimbType.RightFoot;
+    private void ToggleLimb(PlayerPhysics.LimbType limb)
+    {
+        if (_activeLimb == limb)
+            _activeLimb = null;
+        else
+            _activeLimb = limb;
     }
 
     private void HandleLimbMovement()

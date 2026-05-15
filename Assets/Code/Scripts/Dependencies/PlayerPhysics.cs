@@ -14,6 +14,7 @@ public class PlayerPhysics : MonoBehaviour
     private float _recoveryWeight;
 
     [SerializeField] private PlayerManager _player;
+    [SerializeField] private PlayerInteraction _interaction;
 
     [SerializeField] private Transform _root;
 
@@ -561,6 +562,23 @@ else
 private void ApplyLimb(ConfigurableJoint joint, Rigidbody rb, Vector2 input, bool invert, PlayerManager.MovementState state)
 {
     if (!joint) return;
+
+    if (_interaction != null)
+    {
+        LimbType limb = rb == _leftHand
+            ? LimbType.LeftHand
+            : rb == _rightHand
+                ? LimbType.RightHand
+                : rb == _leftFoot
+                    ? LimbType.LeftFoot
+                    : rb == _rightFoot
+                        ? LimbType.RightFoot
+                        : LimbType.LeftHand;
+
+        if ((rb == _leftHand || rb == _rightHand || rb == _leftFoot || rb == _rightFoot)
+            && !_interaction.CanMoveLimb(limb))
+            return;
+    }
 
     bool active = input.sqrMagnitude > 0.0001f;
     JointDrive drive = active ? _activeLimbDrive : _limbDrive;
