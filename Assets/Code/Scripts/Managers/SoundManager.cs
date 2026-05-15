@@ -10,6 +10,10 @@ public class SoundManager : MonoBehaviour
 
     [Header("Sources")]
     public AudioSource sfxSource;
+    public AudioSource musicSource;
+
+    [Header("Music")]
+    public AudioClip backgroundMusic;
 
     [Header("UI SFX")]
     public AudioClip MoveUp;
@@ -22,12 +26,25 @@ public class SoundManager : MonoBehaviour
     void Start()
     {
         Instance = this;
+
+        if (backgroundMusic != null)
+        {
+            PlayMusic(backgroundMusic);
+        }
+
         uiManager = FindObjectOfType<UIManager>();
     }
 
     void Update()
     {
         
+    }
+
+    public void PlayMusic(AudioClip clip)
+    {
+        musicSource.clip = clip;
+        musicSource.loop = true;
+        musicSource.Play();
     }
 
     public void PlaySFX(AudioClip clip)
